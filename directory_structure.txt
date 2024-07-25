@@ -1,0 +1,153 @@
+Folder PATH listing
++---Visitor_Gate_Pass-Sources
+    |   README.md
+    |   
+    +---Documents
+    |   |   .gitignore
+    |   |   pom.xml
+    |   |   
+    |   +---.idea
+    |   |       .gitignore
+    |   |       encodings.xml
+    |   |       misc.xml
+    |   |       uiDesigner.xml
+    |   |       vcs.xml
+    |   |       
+    |   +---src
+    |       +---main
+    |           +---java
+    |               +---org
+    |                   +---example
+    |                           Loading_Database.java
+    |                           
+    +---KJC_Gate_Pass
+    |   |   .eslintrc.cjs
+    |   |   .gitignore
+    |   |   index.html
+    |   |   package-lock.json
+    |   |   package.json
+    |   |   README.md
+    |   |   tailwind.config.js
+    |   |   vite.config.js
+    |   |   
+    |   +---public
+    |   |       vite.svg
+    |   |       
+    |   +---src
+    |       |   App.jsx
+    |       |   index.css
+    |       |   main.jsx
+    |       |   
+    |       +---assets
+    |       |   |   BG_Ldark.svg
+    |       |   |   BG_SVG.svg
+    |       |   |   eye_Hide.svg
+    |       |   |   eye_Show.svg
+    |       |   |   Image_LoginPage.svg
+    |       |   |   KJC_CircLe_Logo_Blu.svg
+    |       |   |   KJC_CircLe_Logo_Whi.svg
+    |       |   |   KJC_Logo.svg
+    |       |   |   KJC_Logo_White.svg
+    |       |   |   react.svg
+    |       |   |   
+    |       |   +---Icons
+    |       |           CheckinBlack_Icon.svg
+    |       |           CheckinCount_Icon.svg
+    |       |           CheckoutBlack_Icon.svg
+    |       |           CheckoutCount_Icon.svg
+    |       |           HomeBlack_Icon.svg
+    |       |           LogoutVectorRed_Icon.svg
+    |       |           RegisterBlack_Icon.svg
+    |       |           RegisterFormIcon.svg
+    |       |           TotalVisitoirBlack_Icon.svg
+    |       |           
+    |       +---components
+    |       |   +---CustomDropDown
+    |       |   |       CustomDropDown.css
+    |       |   |       CustomDropDown.jsx
+    |       |   |       
+    |       |   +---DataGrid
+    |       |   |       DataGrid.css
+    |       |   |       StatusBadge.jsx
+    |       |   |       TableHeader.jsx
+    |       |   |       TableRow.jsx
+    |       |   |       TotalVisitorTable.jsx
+    |       |   |       
+    |       |   +---SideBarNavi
+    |       |   |       SideBarNavi.css
+    |       |   |       SideBarNavi.jsx
+    |       |   |       
+    |       |   +---VisitorTable
+    |       |           StatusBadge.jsx
+    |       |           TableHeader.jsx
+    |       |           TableRow.jsx
+    |       |           VisitorTable.css
+    |       |           VisitorTable.jsx
+    |       |           
+    |       +---hooks
+    |       |       useWindowSize.jsx
+    |       |       
+    |       +---library
+    |       |       helper.js
+    |       |       
+    |       +---pages
+    |           +---Checkout_Visitor
+    |           |       Checkout_Visitor.css
+    |           |       Checkout_Visitor.jsx
+    |           |       
+    |           +---LoginPage_KJC
+    |           |       Footer.jsx
+    |           |       Header.jsx
+    |           |       LoginForm.jsx
+    |           |       LoginPage.css
+    |           |       LoginPage.jsx
+    |           |       TextImage.jsx
+    |           |       
+    |           +---Main_Dashboard
+    |           |       Dashboard.css
+    |           |       Dashboard.jsx
+    |           |       DashboardWidget.css
+    |           |       DashboardWidget.jsx
+    |           |       
+    |           +---Register_Visitor
+    |                   Register_Visitor.css
+    |                   Register_Visitor.jsx
+    |                   
+    +---PIctures
+    |       BG_SVG.svg
+    |       Database_VGP.pdf
+    |       eye_Hide.svg
+    |       eye_Show.svg
+    |       Image_LoginPage.svg
+    |       KJC_Logo.svg
+    |       KJC_Logo_Blue.svg
+    |       KJC_Logo_White.svg
+    |       
+    +---server
+        |   .env
+        |   package-lock.json
+        |   package.json
+        |   server.js
+        |   
+        +---assets
+        |       Passport_photo.png
+        |       
+        +---config
+        |       db.js
+        |       session.js
+        |       
+        +---models
+        |       MongoDB_Commands.js
+        |       users.js
+        |       visitors.js
+        |       visitor_cards.js
+        |       visitor_groups.js
+        |       visitor_sessions.js
+        |       
+        +---node_modules
+        |   |   .package-lock.json
+        |   |   
+        |   +---.bin
+        |
+        +---routes
+                auth.js               
