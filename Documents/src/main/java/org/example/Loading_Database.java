@@ -27,10 +27,7 @@ public class Loading_Database {
     public static void main(String[] args) {
         // Create a file dialog to choose an image file
         FileDialog fileDialog = new FileDialog((Frame) null, "Choose an Image File", FileDialog.LOAD);
-
-        // Set a filter to allow only image files (e.g., PNG, JPEG)
-        fileDialog.setFilenameFilter(new ImageFileFilter());
-
+        fileDialog.setFilenameFilter(new ImageFileFilter()); // Set filter to allow only image files
         fileDialog.setVisible(true);
 
         String imagePath = fileDialog.getFile(); // Get the selected file path
@@ -47,31 +44,29 @@ public class Loading_Database {
         MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017/");
         MongoDatabase database = mongoClient.getDatabase("visitor_management");
 
+        // Get collections from the database
         MongoCollection<Document> visitorsCollection = database.getCollection("visitors");
         MongoCollection<Document> sessionsCollection = database.getCollection("visitor_sessions");
         MongoCollection<Document> groupsCollection = database.getCollection("visitor_groups");
         MongoCollection<Document> cardsCollection = database.getCollection("visitor_cards");
         MongoCollection<Document> usersCollection = database.getCollection("users");
 
-        // Convert image to base64
+        // Convert selected image to base64 format
         String base64Image = imageToBase64(fullImagePath);
 
-        // Prepare the documents to be inserted
+        // Prepare card documents to be inserted
         List<Document> cardDocuments = new ArrayList<>();
         for (int i = 1; i <= 500; i++) {
-            // Format the card_id with leading zeros to ensure it is always three digits
-            String formattedCardId = String.format("%03d", i);
+            String formattedCardId = String.format("%03d", i); // Format card_id to always be three digits
 
             Document cardDoc = new Document()
                     .append("card_id", formattedCardId)
                     .append("status", "available")
-                    .append("assigned_to", null) // assigned_to is null since the card is available
+                    .append("assigned_to", null) // Initially, the card is not assigned
                     .append("last_assigned", new ArrayList<ObjectId>()); // Initialize empty array
             cardDocuments.add(cardDoc);
         }
-
-        // Insert the documents into the collection
-        cardsCollection.insertMany(cardDocuments);
+        cardsCollection.insertMany(cardDocuments); // Insert card documents into the collection
 
         // Insert a user document
         Document userDoc = new Document()
@@ -86,13 +81,12 @@ public class Loading_Database {
                 .append("last_assigned", new ArrayList<ObjectId>()));
         for (int i = 103; i <= 500; i++) {
             String formattedCardId = String.format("%03d", i);
-
             Document filter = new Document("card_id", formattedCardId);
             cardsCollection.updateOne(filter, updateQuery);
         }
 
         int cardId = 103;
-        // Insert 9 more visitors with varying group sizes
+        // Insert 9 visitors with varying group sizes
         for (int i = 1; i <= 9; i++) {
             int groupSize = 1 + (i % 5); // Group sizes from 1 to 5
 
@@ -101,7 +95,6 @@ public class Loading_Database {
                     .append("name", "Visitor " + i)
                     .append("phone_number", "123456780" + i);
             visitorsCollection.insertOne(visitorDoc);
-
             ObjectId visitorId = visitorDoc.getObjectId("_id");
 
             // Insert group
@@ -109,7 +102,6 @@ public class Loading_Database {
                     .append("session_id", new ObjectId()) // Placeholder for session_id (to be updated later)
                     .append("group_members", new ArrayList<Document>());
             groupsCollection.insertOne(groupDoc);
-
             ObjectId groupId = groupDoc.getObjectId("_id");
 
             // Insert session
@@ -140,7 +132,7 @@ public class Loading_Database {
                         .append("_id", groupMemberId)
                         .append("card_id", String.format("%03d", cardId))
                         .append("check_in_time", new Date())
-                        .append("exit_gate", (j % 2 == 0 ? (i % 2 == 0 ?"Gate 1" : "Gate 2") : null))
+                        .append("exit_gate", (j % 2 == 0 ? (i % 2 == 0 ? "Gate 1" : "Gate 2") : null))
                         .append("check_out_time", j % 2 == 0 ? new Date() : null)
                         .append("status", j % 2 == 0 ? "checked_out" : "checked_in");
                 groupMembers.add(groupMember);
@@ -226,11 +218,11 @@ public class Loading_Database {
                     allCheckedOut = false;
                 }
                 Date checkoutTime = member.getDate("check_out_time");
-                if (checkoutTime != null && (latestCheckoutTime == null || checkoutTime.after(latestCheckoutTime))) {
-                    latestCheckoutTime = checkoutTime;
+                                if (checkoutTime != null && (latestCheckoutTime == null || checkoutTime.after(latestCheckoutTime))) {
+                    latestCheckoutTime = checkoutTime; // Update the latest checkout time
                 }
                 if (exitGate == null && member.getString("exit_gate") != null) {
-                    exitGate = member.getString("exit_gate");
+                    exitGate = member.getString("exit_gate"); // Update the exit gate
                 }
             }
 
