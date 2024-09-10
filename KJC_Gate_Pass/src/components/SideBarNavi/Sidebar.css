@@ -2,6 +2,9 @@
 
 .sidebar {
   height: 100%; /* Full screen height */
+  transition: 0.5s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-nav {
@@ -33,13 +36,13 @@
 
 .logo {
   overflow: hidden;
-  transition: all 0.3s ease; /* transition-all */
   width: 220px; /* w-23: Tailwind width of 5.75rem */
+  transition: 1s ease;
 }
 
 /* Collapsed state styles */
 .logo-collapsed {
-  width: 0;
+  display: none;
 }
 
 .collapse-button,
@@ -185,5 +188,56 @@
 @media (min-width: 900px) {
   .sidebar {
     padding-bottom: 40px;
+  }
+}
+
+@media (max-width: 420px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+  }
+
+  .hamburger-menu {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.831);
+    cursor: pointer;
+  }
+}
+
+/* Styles when sidebar is visible */
+.small-screen-sidebar {
+  display: block; /* Ensure the sidebar can be shown */
+  width: 220px; /* Adjust width for sidebar */
+  background-color: white;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 999;
+  transition: 0.3s ease-in-out;
+}
+
+.sidebar-nav-collapsed {
+  min-width: 3rem;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  transition: opacity 0.3s ease;
+}
+.user-profile-collapsed {
+  opacity: 0;
+}
+
+@media (max-width: 420px) {
+  .sidebar-nav {
+    background-color: rgba(255, 255, 255, 0.897);
   }
 }

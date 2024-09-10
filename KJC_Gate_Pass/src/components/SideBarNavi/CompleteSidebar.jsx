@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarItem } from "./Sidebar";
-import { API_BASE_URL } from "../../library/helper";
 import {
   ListCollapse,
   DoorOpen,
   SquareMenu,
   LayoutDashboard,
-} from "lucide-react";
-import axios from "axios";
+  Menu,
+} from "lucide-react"; // Import hamburger icon
 
 function CompleteSidebar({ isActive }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(
+    window.innerWidth > 420
+  ); // State to control sidebar visibility
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 420); // Check if the screen is small
 
   useEffect(() => {
     const fetchUserData = async () => {
-      setLoading(true); // Set loading state to true when starting fetch
+      setLoading(true);
 
       try {
-        const token = localStorage.getItem("token"); // Ensure token is handled securely
+        const token = localStorage.getItem("token");
 
         if (!token) {
           setError("No token found.");
@@ -27,7 +30,6 @@ function CompleteSidebar({ isActive }) {
         }
 
         const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
-        const userRole = payload.role;
         setUser({
           name: payload.name,
           email: payload.email,
@@ -36,52 +38,92 @@ function CompleteSidebar({ isActive }) {
         console.error("Error decoding token:", err);
         setError("Failed to load user data.");
       } finally {
-        setLoading(false); // Set loading state to false when fetch is complete
+        setLoading(false);
       }
     };
 
     fetchUserData();
+
+    // Add event listener to track window resize and toggle sidebar based on screen width
+    const handleResize = () => {
+      const isCurrentSmallScreen = window.innerWidth <= 420;
+      setIsSmallScreen(isCurrentSmallScreen);
+
+      if (isCurrentSmallScreen) {
+        setIsSidebarVisible(false); // Hide sidebar on small screens
+      } else {
+        setIsSidebarVisible(true); // Show sidebar on larger screens
+      }
+    };
+
+    window.addEventListener("resize", handleResize); // Listen for window resize
+    handleResize(); // Call handleResize initially to set the correct state based on the initial screen size
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
+  // Function to toggle sidebar visibility
+  const toggleSidebar = () => {
+    setIsSidebarVisible((prev) => !prev);
+  };
+
   if (loading) {
-    return <div>Loading...</div>; // Display a loading state
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>; // Display error message
+    return <div>Error: {error}</div>;
   }
 
   if (!user) {
-    return <div>No user data available.</div>; // Display message if user is null
+    return <div>No user data available.</div>;
   }
 
   return (
-    <Sidebar user={user}>
-      <SidebarItem
-        icon={<LayoutDashboard size={20} />}
-        text="Dashboard"
-        active={isActive === "dashboard"}
-        naviLink="dashboard"
-      />
-      <SidebarItem
-        icon={<SquareMenu size={20} />}
-        text="Register Visitor"
-        active={isActive === "registerVisitor"}
-        naviLink="register_visitor"
-      />
-      <SidebarItem
-        icon={<DoorOpen size={20} />}
-        text="Checkout Visitor"
-        active={isActive === "checkoutVisitor"}
-        naviLink="checkout_visitor"
-      />
-      <SidebarItem
-        icon={<ListCollapse size={20} />}
-        text="Visitor Details"
-        active={isActive === "visitorDetails"}
-        naviLink="visitor_details"
-      />
-    </Sidebar>
+    <>
+      {isSmallScreen && (
+        <div className="hamburger-menu flex justify-center items-center w-9 h-9 rounded-3xl shadow-lg ">
+          <button onClick={toggleSidebar} className="">
+            <Menu size={24} />
+          </button>
+        </div>
+      )}
+
+      {isSidebarVisible && (
+        <Sidebar
+          user={user}
+          className={`sidebar ${isSmallScreen ? "small-screen-sidebar" : ""}`}
+        >
+          <SidebarItem
+            icon={<LayoutDashboard size={20} />}
+            text="Dashboard"
+            active={isActive === "dashboard"}
+            naviLink="dashboard"
+          />
+          <SidebarItem
+            icon={<SquareMenu size={20} />}
+            text="Register Visitor"
+            active={isActive === "registerVisitor"}
+            naviLink="register_visitor"
+          />
+          <SidebarItem
+            icon={<DoorOpen size={20} />}
+            text="Checkout Visitor"
+            active={isActive === "checkoutVisitor"}
+            naviLink="checkout_visitor"
+          />
+          <SidebarItem
+            icon={<ListCollapse size={20} />}
+            text="Visitor Details"
+            active={isActive === "visitorDetails"}
+            naviLink="visitor_details"
+          />
+        </Sidebar>
+      )}
+    </>
   );
 }
 

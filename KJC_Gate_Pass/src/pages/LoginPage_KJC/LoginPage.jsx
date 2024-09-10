@@ -16,13 +16,12 @@ function LoginPage() {
     <Box
       sx={{
         position: "relative",
-        height: "calc(100vh - 38px)",
+        height: "calc(100vh)",
         display: "flex",
         flexDirection: "column",
         backgroundColor: "#fff",
         boxSizing: "border-box",
         width: "100%",
-        pb: 5,
       }}
     >
       <Box
@@ -38,7 +37,7 @@ function LoginPage() {
         }}
       />
 
-      <Box sx={{ position: "relative", zIndex: 3 }}>
+      <Box sx={{ position: "relative", zIndex: 1 }}>
         <Header />
       </Box>
 

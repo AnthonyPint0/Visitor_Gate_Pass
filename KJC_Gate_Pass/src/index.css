@@ -28,6 +28,12 @@ body {
   font-family: "Inter", sans-serif;
 }
 
+@media (max-width: 420px) {
+  h2 {
+    padding-left: 30px;
+  }
+}
+
 h1,
 h2,
 h3,

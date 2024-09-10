@@ -32,7 +32,6 @@
   border: 1px solid #8181817a;
   border-radius: 3px;
   z-index: 1000;
-  width: 217px;
 }
 
 .custom-dropdown-search {
@@ -60,6 +59,9 @@
   width: fit-content;
   height: 35px !important;
   cursor: pointer;
+  /* color: white;
+  font-weight: 700;
+  background-color: #00931d; */
   border: 0.2px solid #cecece;
   margin: 0.3px;
   border-radius: 2px;

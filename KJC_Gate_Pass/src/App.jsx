@@ -7,6 +7,7 @@ import Checkout_Visitor from "./pages/Checkout_Visitor/Checkout_Visitor.jsx";
 import Visitor_Details from "./pages/Visitor_Details/Visitor_Details.jsx";
 import Pre_Approve from "./pages/Pre_Approve/Pre_Approve.jsx";
 import PrivateRoute from "./components/PrivateRoute"; // Make sure the path is correct
+import UnauthorizedRedirect from "./pages/Unauthorized/UnauthorizedRedirect.jsx";
 
 function App() {
   return (
@@ -47,7 +48,7 @@ function App() {
         />
 
         <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/unauthorized" element={<h1>Unauthorized</h1>} />
+        <Route path="/unauthorized" element={<UnauthorizedRedirect />} />
       </Routes>
     </BrowserRouter>
   );

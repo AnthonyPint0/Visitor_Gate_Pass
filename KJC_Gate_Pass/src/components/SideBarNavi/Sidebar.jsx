@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronFirst, ChevronLast, icons, LogOut } from "lucide-react";
 import circleLogo from "../../assets/KJC_Logo.svg";
@@ -8,6 +8,20 @@ const SidebarContext = createContext();
 export const Sidebar = ({ children, user }) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setExpanded(window.matchMedia("(max-width: 420px)").matches);
+    };
+
+    checkScreenSize();
+
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => {
+      window.removeEventListener("resize", checkScreenSize);
+    };
+  }, []);
 
   const handleLogout = () => {
     {
@@ -41,7 +55,7 @@ export const Sidebar = ({ children, user }) => {
           />
           <button
             onClick={() => setExpanded((curr) => !curr)}
-            className="collapse-button"
+            className="collapse-button hidden sm:block"
           >
             {expanded ? (
               <ChevronFirst className="collapse-icon" />
@@ -56,13 +70,13 @@ export const Sidebar = ({ children, user }) => {
         </SidebarContext.Provider>
 
         <div className={`user-profile${expanded ? "" : "-collapsed"}`}>
-          <div className="flex flex-1 justify-center items-center text-xl bg-blue-600 h-10 rounded-md text-white">
+          <div className="flex flex-1 justify-center items-center text-xl bg-blue-600 h-10 rounded-md text-white min-w-10">
             {getInitials(user.name)}
           </div>
           <div
             className={`user-profile-details${expanded ? "" : "-collapsed"}`}
           >
-            <div className="user-profile-details-texts">
+            <div className="user-profile-details-texts text-sm">
               <h4>{user.name}</h4>
               <div className="user-profile-details-texts-email">
                 {user.email}

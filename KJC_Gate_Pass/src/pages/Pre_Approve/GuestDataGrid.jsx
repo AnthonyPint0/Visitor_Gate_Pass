@@ -12,7 +12,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import axios from "axios";
 import { useEffect, useState, useCallback } from "react";
-import { API_BASE_URL } from "../../library/helper";
+import { API_BASE_URL, formatDateWithPadding } from "../../library/helper";
 import { ToastContainer, toast, Slide } from "react-toastify";
 
 const GuestDataGrid = ({ userINFO }) => {
@@ -43,6 +43,8 @@ const GuestDataGrid = ({ userINFO }) => {
           event: guest.event || "",
           invitedAs: guest.invitedAs || "",
           noOfemailSent: guest.noOfemailSent || 0,
+          isVisited: guest.isVisited || false,
+          checkedInTime: guest.checkedInTime || null,
         }));
 
         setRows(formattedGuests);
@@ -107,6 +109,15 @@ const GuestDataGrid = ({ userINFO }) => {
       return;
     }
 
+    if (rowToUpdate.isVisited && rowToUpdate.checkedInTime) {
+      notifyErr(
+        `Guest has already entered the campus on ${formatDateWithPadding(
+          rowToUpdate.checkedInTime
+        )}`
+      );
+      return;
+    }
+
     // Prompt the user for confirmation
     const confirmSave = window.confirm(
       `Are you sure you want to save changes and resend the email for ${rowToUpdate.name}?`
@@ -154,6 +165,14 @@ const GuestDataGrid = ({ userINFO }) => {
   );
 
   const handleResendEmail = async (row) => {
+    if (row.isVisited && row.checkedInTime) {
+      notifyErr(
+        `Guest has already entered the campus on ${formatDateWithPadding(
+          row.checkedInTime
+        )}`
+      );
+      return;
+    }
     if (
       window.confirm(
         `Are you sure you want to send an invitation to: ${row.email}`

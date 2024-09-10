@@ -25,14 +25,12 @@ import dayjs from "dayjs";
 import profile from "../../assets/profile.svg";
 import { formatDateWithPadding } from "../../library/helper.js";
 
-const parseDate = (dateString) => new Date(dateString).getTime();
-
 const VisitorTable2 = ({ visitors }) => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [fromDate, setFromDate] = useState(null); // From date state
-  const [toDate, setToDate] = useState(null); // To date state
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
 
   const toggleRow = (index) => {
     setExpandedRows((prev) =>
@@ -85,7 +83,7 @@ const VisitorTable2 = ({ visitors }) => {
               backgroundColor: "white !important",
               color: "black !important",
               border: "1px",
-              borderRadius: "px !important",
+              borderRadius: "4px !important",
               padding: "6px 12px",
               textTransform: "none",
               boxShadow: "none",
@@ -115,6 +113,21 @@ const VisitorTable2 = ({ visitors }) => {
     [expandedRows]
   );
 
+  const handleKeyDown = (event) => {
+    // Check if Ctrl + Shift are pressed
+    if (event.ctrlKey && event.shiftKey && event.key === " ") {
+      event.preventDefault(); // Prevent default spacebar action
+      const input = event.target;
+      const cursorPos = input.selectionStart;
+      const value = input.value;
+      // Insert "Ctrl+Shift" at the cursor position
+      input.value =
+        value.slice(0, cursorPos) + "Ctrl+Shift" + value.slice(cursorPos);
+      input.selectionStart = cursorPos + 10; // Adjust for the length of "Ctrl+Shift"
+      input.selectionEnd = cursorPos + 10;
+    }
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
@@ -135,7 +148,16 @@ const VisitorTable2 = ({ visitors }) => {
                 onChange={(newValue) =>
                   setFromDate(newValue ? dayjs(newValue).toDate() : null)
                 }
-                renderInput={(params) => <TextField fullWidth {...params} />}
+                renderInput={(params) => (
+                  <TextField
+                    fullWidth
+                    {...params}
+                    inputProps={{
+                      ...params.inputProps,
+                      onKeyDown: handleKeyDown,
+                    }}
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -145,7 +167,16 @@ const VisitorTable2 = ({ visitors }) => {
                 onChange={(newValue) =>
                   setToDate(newValue ? dayjs(newValue).toDate() : null)
                 }
-                renderInput={(params) => <TextField fullWidth {...params} />}
+                renderInput={(params) => (
+                  <TextField
+                    fullWidth
+                    {...params}
+                    inputProps={{
+                      ...params.inputProps,
+                      onKeyDown: handleKeyDown,
+                    }}
+                  />
+                )}
               />
             </Grid>
           </Grid>
@@ -252,8 +283,6 @@ const VisitorTable2 = ({ visitors }) => {
                                     gap: 2,
                                   }}
                                 >
-                                  {" "}
-                                  {/* New Flexbox container */}
                                   {row.visitor_cards.map((card, cardIndex) => (
                                     <Box
                                       key={cardIndex}
@@ -330,39 +359,6 @@ const VisitorTable2 = ({ visitors }) => {
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            mt: 2,
-          }}
-        >
-          <IconButton
-            onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-            disabled={page === 0}
-          >
-            <ChevronLeft />
-          </IconButton>
-          <Typography>
-            Page {page + 1} of{" "}
-            {Math.ceil(filteredVisitors.length / rowsPerPage)}
-          </Typography>
-          <IconButton
-            onClick={() =>
-              setPage((prev) =>
-                Math.min(
-                  prev + 1,
-                  Math.floor(filteredVisitors.length / rowsPerPage)
-                )
-              )
-            }
-            disabled={page >= Math.floor(filteredVisitors.length / rowsPerPage)}
-          >
-            <ChevronRight />
-          </IconButton>
-        </Box>
       </Box>
     </LocalizationProvider>
   );

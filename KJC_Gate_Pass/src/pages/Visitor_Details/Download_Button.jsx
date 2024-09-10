@@ -124,7 +124,7 @@ const Download_Button = () => {
             onClick={togglePopover}
             sx={{
               textTransform: "none",
-              backgroundColor: "blue", // #2a58f6 background
+              backgroundColor: "#2a58f6", // #2a58f6 background
               color: "white", // White text color
               border: "1px solid white", // White border
               "&:hover": {

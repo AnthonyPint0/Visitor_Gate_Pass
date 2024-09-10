@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -21,6 +21,8 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [user, setUser] = useState(null); // Store the user data
+  const [logoutTimer, setLogoutTimer] = useState(null); // Store the logout timer
   const navigate = useNavigate();
   const API_URL = API_BASE_URL;
 
@@ -62,6 +64,48 @@ function LoginForm() {
       transition: Slide,
     });
 
+  useEffect(() => {
+    const checkToken = () => {
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        try {
+          // Decode the token payload
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          setUser({
+            name: payload.name,
+            email: payload.email,
+            role: payload.role,
+            phone_number: payload.phone_number,
+          });
+
+          // Check if token is expired
+          const currentTime = Date.now() / 1000; // in seconds
+          if (payload.exp < currentTime) {
+            handleLogout(); // Auto-logout if token is expired
+          } else {
+            // Set auto-logout timeout to expire when token expires
+            const timeToLogout = (payload.exp - currentTime) * 1000; // in milliseconds
+            const timer = setTimeout(handleLogout, timeToLogout);
+            setLogoutTimer(timer); // Store the timer in state
+          }
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          navigate("/unauthorized");
+        }
+      }
+    };
+
+    checkToken(); // Call the function on component mount
+
+    return () => {
+      // Clear the logout timer on component unmount
+      if (logoutTimer) {
+        clearTimeout(logoutTimer);
+      }
+    };
+  }, [navigate, logoutTimer]);
+
   const handleLogin = async (event) => {
     event.preventDefault();
     const lowercaseEmail = email.toLowerCase();
@@ -76,7 +120,7 @@ function LoginForm() {
         // Store token in localStorage
         localStorage.setItem("token", response.data.token);
 
-        // Extract role from the token to navigate appropriately
+        // Extract role and token expiration time from the token
         const token = response.data.token;
         const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
         const user = {
@@ -85,6 +129,14 @@ function LoginForm() {
           role: payload.role,
           phone_number: payload.phone_number,
         };
+
+        setUser(user); // Set user state
+
+        // Set auto-logout timeout based on token expiry
+        const currentTime = Date.now() / 1000; // in seconds
+        const timeToLogout = (payload.exp - currentTime) * 1000; // in milliseconds
+        const timer = setTimeout(handleLogout, timeToLogout);
+        setLogoutTimer(timer);
 
         // Navigate based on role
         if (user.role === "HOD") {
@@ -120,6 +172,33 @@ function LoginForm() {
     setShowForgotPassword(false);
   };
 
+  const handleGoToPage = () => {
+    if (user) {
+      if (user.role === "HOD") {
+        notifySuccess(`Welcome back, ${user.name}!`);
+        setTimeout(() => {
+          navigate("/pre_approved_guest");
+        }, 1000);
+      } else if (user.role === "security") {
+        notifySuccess(`Welcome back, ${user.name}!`);
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
+      } else {
+        navigate("/unauthorized");
+      }
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Remove the token from localStorage
+    setUser(null); // Clear the user state
+    if (logoutTimer) {
+      clearTimeout(logoutTimer); // Clear the auto-logout timer
+    }
+    notifySuccess("Logged out successfully!");
+  };
+
   return (
     <Paper
       elevation={6}
@@ -134,79 +213,97 @@ function LoginForm() {
         },
       }}
     >
-      {!showForgotPassword ? (
-        <Box
-          component="form"
-          onSubmit={handleLogin}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "10px",
-              "& input": {
-                padding: "10px 12px",
+      {!user ? (
+        !showForgotPassword ? (
+          <Box
+            component="form"
+            onSubmit={handleLogin}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "10px",
+                "& input": {
+                  padding: "10px 12px",
+                  "@media (max-width: 600px)": {
+                    padding: "8px 10px",
+                  },
+                },
+              },
+              "@media (max-width: 600px)": {
+                fontSize: "12px",
+              },
+            }}
+          >
+            <TextField
+              label="Email"
+              value={email}
+              onChange={handleEmailChange}
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              required
+            />
+            <TextField
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={handlePasswordChange}
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={togglePasswordVisibility} edge="end">
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{
+                mt: 2,
+                py: 1.2,
+                borderRadius: "10px",
+                fontSize: "15px",
                 "@media (max-width: 600px)": {
-                  padding: "8px 10px",
+                  fontSize: "12px",
+                  py: 1,
                 },
-              },
-            },
-            "@media (max-width: 600px)": {
-              fontSize: "12px",
-            },
-          }}
-        >
-          <TextField
-            label="Email"
-            value={email}
-            onChange={handleEmailChange}
-            fullWidth
-            margin="normal"
-            variant="outlined"
-            required
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "10px",
-                "& input": {
-                  padding: "10px 12px",
-                  "@media (max-width: 600px)": {
-                    padding: "8px 10px",
-                  },
+              }}
+            >
+              Sign in
+            </Button>
+            <Typography
+              variant="body2"
+              color="primary"
+              align="center"
+              sx={{
+                mt: 2,
+                cursor: "pointer",
+                "@media (max-width: 600px)": {
+                  fontSize: "12px",
                 },
-              },
-            }}
-          />
-          <TextField
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={handlePasswordChange}
-            fullWidth
-            margin="normal"
-            variant="outlined"
-            required
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={togglePasswordVisibility} edge="end">
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "10px",
-                "& input": {
-                  padding: "10px 12px",
-                  "@media (max-width: 600px)": {
-                    padding: "8px 10px",
-                  },
-                },
-              },
-            }}
-          />
+              }}
+              onClick={handleForgotPassword}
+            >
+              Forgot your password?
+            </Typography>
+          </Box>
+        ) : (
+          <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
+        )
+      ) : (
+        <Box>
           <Button
-            type="submit"
             variant="contained"
             color="primary"
+            onClick={handleGoToPage}
             fullWidth
             sx={{
               mt: 2,
@@ -219,26 +316,27 @@ function LoginForm() {
               },
             }}
           >
-            Sign in
+            Go to Your Page
           </Button>
-          <Typography
-            variant="body2"
-            color="primary"
-            align="center"
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleLogout}
+            fullWidth
             sx={{
               mt: 2,
-              cursor: "pointer",
+              py: 1.2,
+              borderRadius: "10px",
+              fontSize: "15px",
               "@media (max-width: 600px)": {
                 fontSize: "12px",
+                py: 1,
               },
             }}
-            onClick={handleForgotPassword}
           >
-            Forgot your password?
-          </Typography>
+            Logout
+          </Button>
         </Box>
-      ) : (
-        <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
       )}
       <ToastContainer />
     </Paper>

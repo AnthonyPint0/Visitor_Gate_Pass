@@ -598,6 +598,7 @@ function Register_Visitor() {
                           flexBasis: "65%",
                           "& > :not(style)": {
                             m: 1,
+                            pl: 2,
                             width: { xs: "85%", sm: "260px" },
                           },
                           height: { xs: "auto", sm: "200px", md: "300px" },
@@ -731,6 +732,9 @@ function Register_Visitor() {
                                 }
                                 options={filteredICards}
                                 placeholder="ID"
+                                Fcolour="white"
+                                BGcolor="#1eb33b"
+                                Fweight="700"
                               />
                             </Box>
                           ))}

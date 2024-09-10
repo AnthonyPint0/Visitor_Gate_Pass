@@ -57,7 +57,7 @@ const CustomDropDown = ({
     <div
       className="custom-dropdown"
       style={{
-        width: `${widths * 1.2}px`,
+        width: `100%`,
         height: heights ? `${heights}px` : "auto",
       }}
       ref={dropdownRef}
@@ -69,7 +69,7 @@ const CustomDropDown = ({
         <div
           className="custom-dropdown-placeholder"
           style={{
-            width: `${widths}px`,
+            width: `100%`,
             height: heights ? `${heights}px` : "auto",
           }}
         >
@@ -83,7 +83,7 @@ const CustomDropDown = ({
             !isTop ? "top-full right-0 left-0" : "bottom-full right-0 left-0"
           }`}
           style={{
-            width: `${search_box_width * 1.94}px`,
+            width: `${search_box_width * 1.3}px`,
             height: heights ? `${heights}px` : "auto",
           }}
         >

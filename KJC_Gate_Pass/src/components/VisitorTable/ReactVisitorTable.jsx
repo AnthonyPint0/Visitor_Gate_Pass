@@ -57,7 +57,7 @@ const HorizontalStatusBadgeContainer = styled(Box)({
   overflowX: "auto",
 });
 
-const ReactVisitorTable = ({ visitors, totalVisitorCount }) => {
+const ReactVisitorTable = ({ visitors }) => {
   const [filterText, setFilterText] = useState("");
 
   const columns = useMemo(
@@ -185,9 +185,13 @@ const ReactVisitorTable = ({ visitors, totalVisitorCount }) => {
         <Table {...getTableProps()}>
           <StyledTableHead>
             {headerGroups.map((headerGroup) => (
-              <TableRow {...headerGroup.getHeaderGroupProps()}>
+              <TableRow
+                key={headerGroup.id}
+                {...headerGroup.getHeaderGroupProps()}
+              >
                 {headerGroup.headers.map((column) => (
                   <StyledTableCell
+                    key={column.id}
                     {...column.getHeaderProps(column.getSortByToggleProps())}
                   >
                     {column.render("Header")}
@@ -207,9 +211,9 @@ const ReactVisitorTable = ({ visitors, totalVisitorCount }) => {
             {page.map((row) => {
               prepareRow(row);
               return (
-                <TableRow {...row.getRowProps()}>
+                <TableRow key={row.id} {...row.getRowProps()}>
                   {row.cells.map((cell) => (
-                    <TableCell {...cell.getCellProps()}>
+                    <TableCell key={cell.column.id} {...cell.getCellProps()}>
                       {cell.render("Cell")}
                     </TableCell>
                   ))}
