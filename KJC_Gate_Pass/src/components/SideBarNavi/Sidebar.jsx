@@ -5,9 +5,30 @@ import circleLogo from "../../assets/KJC_Logo.svg";
 import "./Sidebar.css"; // Import the CSS file for styling
 
 const SidebarContext = createContext();
-export const Sidebar = ({ children }) => {
-  const navigator = useNavigate();
+export const Sidebar = ({ children, user }) => {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+
+  const handleLogout = () => {
+    {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  };
+
+  const getInitials = (name) => {
+    const words = name.split(" ").filter(Boolean); // Split the name by spaces and filter out any empty strings
+
+    // Check if there are at least two words
+    if (words.length > 1) {
+      const firstInitial = words[0][0]; // First word's first character
+      const lastInitial = words[words.length - 1][0]; // Last word's first character
+      return `${firstInitial}${lastInitial}`.toUpperCase(); // Combine and convert to uppercase
+    }
+
+    // If there's only one word, just return its initial
+    return words[0][0].toUpperCase();
+  };
 
   return (
     <aside className="sidebar">
@@ -35,24 +56,19 @@ export const Sidebar = ({ children }) => {
         </SidebarContext.Provider>
 
         <div className={`user-profile${expanded ? "" : "-collapsed"}`}>
-          <img
-            src="https://ui-avatars.com/api/?background=0D8ABC&color=fff"
-            alt=""
-            className="user-profile-img"
-          />
+          <div className="flex flex-1 justify-center items-center text-xl bg-blue-600 h-10 rounded-md text-white">
+            {getInitials(user.name)}
+          </div>
           <div
             className={`user-profile-details${expanded ? "" : "-collapsed"}`}
           >
             <div className="user-profile-details-texts">
-              <h4>John Doe</h4>
-              <span className="user-profile-details-texts-email">
-                johndoe@gmail.com
-              </span>
+              <h4>{user.name}</h4>
+              <div className="user-profile-details-texts-email">
+                {user.email}
+              </div>
             </div>
-            <button
-              onClick={() => navigator("/login")}
-              className="logout-button"
-            >
+            <button onClick={() => handleLogout()} className="logout-button">
               <LogOut size={20} className="logout-icon" />
             </button>
           </div>

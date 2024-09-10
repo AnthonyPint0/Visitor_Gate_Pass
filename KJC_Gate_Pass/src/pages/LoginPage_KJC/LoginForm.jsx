@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  IconButton,
+  InputAdornment,
+  Paper,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { API_BASE_URL } from "../../library/helper";
+import ForgotPasswordForm from "./ForgotPasswordForm";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import useWindowSize from "../../hooks/useWindowSize";
-import eyeClosed from "../../assets/eye_Hide.svg";
-import eyeOpened from "../../assets/eye_Show.svg";
-import axios from "axios";
-import { API_BASE_URL } from "../../library/helper.js";
-import ForgotPasswordForm from "./ForgotPasswordForm"; // Import the ForgotPasswordForm component
 
 function LoginForm() {
-  const { width, height } = useWindowSize();
   const [showPassword, setShowPassword] = useState(false);
-  const [text, setText] = useState("Show");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showForgotPassword, setShowForgotPassword] = useState(false); // New state for forgot password
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const API_URL = API_BASE_URL;
 
-  useEffect(() => {
-    document.title = `Login: ${width} x ${height}`;
-  }, [width, height]);
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
-    setText((prevText) => (prevText === "Show" ? "Hide" : "Show"));
   };
 
   const handleEmailChange = (event) => {
@@ -62,91 +62,186 @@ function LoginForm() {
       transition: Slide,
     });
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
     const lowercaseEmail = email.toLowerCase();
-    axios
-      .post(`${API_URL}/login`, { email: lowercaseEmail, password })
-      .then((result) => {
-        console.log(result);
 
-        if (result.data.message === "Success") {
-          notifySuccess("Success");
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email: lowercaseEmail,
+        password,
+      });
+
+      if (response.data.token) {
+        // Store token in localStorage
+        localStorage.setItem("token", response.data.token);
+
+        // Extract role from the token to navigate appropriately
+        const token = response.data.token;
+        const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
+        const user = {
+          name: payload.name,
+          email: payload.email,
+          role: payload.role,
+          phone_number: payload.phone_number,
+        };
+
+        // Navigate based on role
+        if (user.role === "HOD") {
+          notifySuccess(`Welcome, ${user.name}!`);
+          setTimeout(() => {
+            navigate("/pre_approved_guest");
+          }, 1000);
+        } else if (user.role === "security") {
+          notifySuccess(`Welcome, ${user.name}!`);
           setTimeout(() => {
             navigate("/dashboard");
           }, 1000);
         } else {
-          notifyErr(result.data);
-          navigate("/login");
+          navigate("/unauthorized");
         }
-        setPassword("");
-        setEmail("");
-      })
-      .catch((err) => console.log(err));
+      } else {
+        notifyErr(response.data.message || "An error occurred");
+      }
+    } catch (error) {
+      console.error(error);
+      notifyErr("An error occurred. Please try again.");
+    }
+
+    setPassword("");
+    setEmail("");
   };
 
   const handleForgotPassword = () => {
-    setShowForgotPassword(true); // Show the forgot password form
+    setShowForgotPassword(true);
   };
 
   const handleBackToLogin = () => {
-    setShowForgotPassword(false); // Go back to the login form
+    setShowForgotPassword(false);
   };
 
   return (
-    <>
-      {!showForgotPassword ? ( // Conditionally render the login form or forgot password form
-        <div className="loginForm">
-          <div className="textInput">
-            <label className="textPara" htmlFor="emailText">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={handleEmailChange}
-              autoComplete="email"
-              id="emailText"
-              className="inputsB"
-              placeholder="Enter your email"
-            />
-          </div>
-          <div className="textInput">
-            <div className="textHide">
-              <label className="textPara" htmlFor="passwordText">
-                Password
-              </label>
-              <div onClick={togglePasswordVisibility}>
-                <img
-                  src={showPassword ? eyeOpened : eyeClosed}
-                  alt="Toggleable"
-                />
-                <p className="textState">{text}</p>
-              </div>
-            </div>
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={handlePasswordChange}
-              autoComplete="current-password"
-              id="passwordText"
-              className="inputsB"
-              placeholder="Enter your password"
-            />
-          </div>
-          <button type="submit" className="login-button" onClick={handleLogin}>
-            Log in
-          </button>
-          <Link to="#" className="forgetPwd" onClick={handleForgotPassword}>
-            <h3>Forgot your password?</h3>
-          </Link>{" "}
-          {/* Use Link instead of button */}
-        </div>
+    <Paper
+      elevation={6}
+      sx={{
+        p: 3,
+        borderRadius: "12px",
+        width: "100%",
+        maxWidth: "350px",
+        mx: "auto",
+        "@media (max-width: 600px)": {
+          fontSize: "12px",
+        },
+      }}
+    >
+      {!showForgotPassword ? (
+        <Box
+          component="form"
+          onSubmit={handleLogin}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "10px",
+              "& input": {
+                padding: "10px 12px",
+                "@media (max-width: 600px)": {
+                  padding: "8px 10px",
+                },
+              },
+            },
+            "@media (max-width: 600px)": {
+              fontSize: "12px",
+            },
+          }}
+        >
+          <TextField
+            label="Email"
+            value={email}
+            onChange={handleEmailChange}
+            fullWidth
+            margin="normal"
+            variant="outlined"
+            required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "10px",
+                "& input": {
+                  padding: "10px 12px",
+                  "@media (max-width: 600px)": {
+                    padding: "8px 10px",
+                  },
+                },
+              },
+            }}
+          />
+          <TextField
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={handlePasswordChange}
+            fullWidth
+            margin="normal"
+            variant="outlined"
+            required
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={togglePasswordVisibility} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "10px",
+                "& input": {
+                  padding: "10px 12px",
+                  "@media (max-width: 600px)": {
+                    padding: "8px 10px",
+                  },
+                },
+              },
+            }}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{
+              mt: 2,
+              py: 1.2,
+              borderRadius: "10px",
+              fontSize: "15px",
+              "@media (max-width: 600px)": {
+                fontSize: "12px",
+                py: 1,
+              },
+            }}
+          >
+            Sign in
+          </Button>
+          <Typography
+            variant="body2"
+            color="primary"
+            align="center"
+            sx={{
+              mt: 2,
+              cursor: "pointer",
+              "@media (max-width: 600px)": {
+                fontSize: "12px",
+              },
+            }}
+            onClick={handleForgotPassword}
+          >
+            Forgot your password?
+          </Typography>
+        </Box>
       ) : (
         <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
       )}
       <ToastContainer />
-    </>
+    </Paper>
   );
 }
 

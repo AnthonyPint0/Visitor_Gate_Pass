@@ -1,5 +1,5 @@
 // Constant for the API base URL
-export const API_BASE_URL = "http://172.18.2.9:3001/api";
+export const API_BASE_URL = "http://172.18.2.9:3002";
 // replace <localhost> with this device's IP address to access the website in your network
 
 export function padZero(value) {

@@ -1,24 +1,31 @@
-/* Full viewport height and width for main content */
 .totalContent {
   width: 100vw !important;
   height: 100vh !important;
+  background-color: #f9f9f9;
+
 }
 
-/* Sidebar styling */
+
 .fakeSideBAr {
   width: 175px;
 }
 
-/* Main content area flexbox */
-.mainContent {
+.fakeBody {
+
+  height: calc(100vh - 38px);
+  padding-bottom: 5px;
   display: flex;
-  height: 100%;
+  flex-direction: column;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  overflow: auto;
-  padding: 10px;
 }
 
-/* Form container */
+
+
+
 .register-form2 {
   display: inline-flex;
   flex-direction: column;
@@ -84,7 +91,7 @@
 .vd_name_sections {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Align items to the left */
+  justify-content: flex-start;
   width: 100%;
   font-size: 14px;
   padding: 10px;
@@ -99,13 +106,15 @@
 .table {
   width: 100%;
 }
+
 .vt_searchcontainer {
-  max-width: 120px;
-  padding: 8px;
-  border: 1px solid #ccc;
+
+  margin-left: 2px;
+  padding: 7px;
+  border: 1px solid grey;
+  width: 240px;
   border-radius: 4px;
-  font-size: 14px;
-  margin: 0px 5px;
+  margin-bottom: -9px;
 }
 
 .vt_date_search {
@@ -114,7 +123,7 @@
 }
 
 .main-form-vd h1 {
-  background-color: none; /* This value is actually not valid; you might want to remove or change it */
+  background-color: none;
   color: rgb(142, 141, 141);
   font-family: "Comic Sans MS", cursive;
   font-weight: bold;

@@ -13,16 +13,10 @@
   height: 100vh !important;
 }
 
-/* Sidebar styling */
-.fakeSideBAr {
-  width: 175px;
-}
-
 /* Main content area flexbox */
 .mainContent {
   display: flex;
-  justify-content: center;
-  height: 100%;
+  height: 100vh;
   width: 100%;
   overflow: auto;
   padding: 10px;
@@ -30,30 +24,29 @@
 
 /* Form container */
 .checkout-register-form {
-  display: inline-flex;
+  display: flex;
+  width: 100%;
   flex-direction: column;
-  max-width: 900px;
-  height: fit-content;
-  background-color: white;
-  border: 0.5px solid rgba(0, 0, 0, 0.144);
-  border-radius: 4px;
-  overflow: auto;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  /* overflow: auto; */
 }
 
-.checkout-register-form .left-section-form {
-  /* flex: 1 0 100px; */
+/* .checkout-register-form .left-section-form {
+  flex: 1 0 100px;
   flex: 2;
-}
-.fetch-ids {
+} */
+/* .fetch-ids {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: end;
   justify-content: start;
   border: 0.5px solid #c2c2c2;
-}
+} */
 
-.fetch-ids button {
+/* .fetch-ids button {
   padding: 8px;
   margin-bottom: 10px;
   margin-left: 2%;
@@ -79,22 +72,22 @@
 .checkout-register-form .photo-frame {
   height: 100%;
   padding-bottom: 20px;
-}
+} */
 
-.checkout-register-form .photo {
-  width: 300px; /* Adjust width as needed, e.g., 300px or 400px */
+/* .checkout-register-form .photo {
+  width: 300px;
   min-width: 300px;
-  height: 180px; /* Maintain aspect ratio */
+  height: 180px;
   min-height: 150px;
-  max-width: 400px; /* Optional: constrain maximum width */
-  border: 1px solid #c2c2c2; /* Optional: border for the webcam feed */
-  border-radius: 5px; /* Optional: rounded corners */
-  background-color: #ffffff; /* Black background for the webcam feed */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
+  max-width: 400px; 
+  border: 1px solid #c2c2c2; 
+  border-radius: 5px; 
+ background-color: #ffffff; Black background for the webcam feed 
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+} */
 
-.checkout-register-form .photo img {
+/* .checkout-register-form .photo img {
   width: 100%;
   height: 180px;
   border-radius: 5px;
-}
+} */

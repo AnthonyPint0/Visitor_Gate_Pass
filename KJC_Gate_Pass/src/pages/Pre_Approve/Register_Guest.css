@@ -1,0 +1,70 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
+}
+.totalContent {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+/* Sidebar styling */
+.fakeSideBAr {
+  width: 175px;
+}
+
+/* Main content area flexbox */
+.mainContent {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  padding: 10px;
+}
+.form-title {
+  padding: 4px 1px 5px 8px;
+}
+
+.form-title h2 {
+  color: rgb(9, 75, 156);
+  margin: 2px;
+  margin-left: 10px;
+  border-bottom: 1px solid rgb(209, 209, 209);
+}
+
+.form-container {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  min-height: 100vh; /* Ensure the container takes at least the full viewport height */
+}
+
+.register-guest-form {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 900px; /* Set a max-width for a standard form look */
+  height: fit-content;
+  background: white; /* Semi-transparent white background */
+  border: 0.5px solid rgba(255, 255, 255, 0.4); /* Slightly transparent border */
+  border-radius: 10px;
+  overflow: auto;
+  padding: 20px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+  backdrop-filter: blur(10px); /* Apply a blur effect for the glass look */
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+}
+
+@media (max-width: 600px) {
+  .form-title h2 {
+    font-size: 16px; /* Adjust font size for smaller screens */
+  }
+  .small-input {
+    height: 2.5rem; /* Smaller height */
+  }
+
+  .small-input .MuiInputBase-input {
+    height: 1.5rem; /* Inner input field height */
+    padding: 8px 14px; /* Adjust padding for the input text */
+  }
+}

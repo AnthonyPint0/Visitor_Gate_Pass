@@ -6,12 +6,12 @@
 }
 
 .custom-date-picker-wrapper .custom-datepicker-input {
-  width: 100px;
+  width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
-  margin: 0px 5px;
+  margin: 0;
 }
 
 .custom-date-picker-wrapper .react-datepicker-popper {

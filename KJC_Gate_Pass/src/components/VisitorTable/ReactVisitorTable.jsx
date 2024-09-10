@@ -1,7 +1,61 @@
 import React, { useMemo, useState } from "react";
 import { useTable, useSortBy, usePagination } from "react-table";
 import StatusBadge from "./StatusBadge.jsx";
-import "./VisitorTable.css"; // Import CSS for styling
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Container,
+  Typography,
+  Button,
+  Box,
+  styled,
+} from "@mui/material";
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  marginTop: theme.spacing(4),
+}));
+
+const StyledTableHead = styled(TableHead)(({ theme }) => ({
+  backgroundColor: theme.palette.grey[200],
+}));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  fontWeight: "bold",
+}));
+
+const FilterContainer = styled("div")(({ theme }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: theme.spacing(2),
+  [theme.breakpoints.down("sm")]: {
+    flexDirection: "column",
+    alignItems: "start",
+  },
+}));
+
+const PhotoCell = styled("div")({
+  display: "flex",
+  justifyContent: "center",
+});
+
+const PaginationControls = styled("div")(({ theme }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  marginTop: theme.spacing(2),
+}));
+
+const HorizontalStatusBadgeContainer = styled(Box)({
+  display: "flex",
+  flexWrap: "nowrap",
+  gap: "8px",
+  overflowX: "auto",
+});
 
 const ReactVisitorTable = ({ visitors, totalVisitorCount }) => {
   const [filterText, setFilterText] = useState("");
@@ -28,29 +82,23 @@ const ReactVisitorTable = ({ visitors, totalVisitorCount }) => {
         Header: "Visitor ID Cards",
         accessor: "visitor_cards",
         Cell: ({ value }) => (
-          <div style={{ textAlign: "left" }}>
+          <HorizontalStatusBadgeContainer>
             {value.map((card) => (
               <StatusBadge key={card.card_id} card={card} />
             ))}
-          </div>
+          </HorizontalStatusBadgeContainer>
         ),
-        disableSortBy: true, // Disable sorting for this column
+        disableSortBy: true,
       },
       {
         Header: "Photos",
         accessor: "photos",
         Cell: ({ value }) => (
-          <div className="flex flex-1 justify-center">
-            <img
-              className="w-7 h-7"
-              src={value}
-              alt="Visitor"
-              width="30"
-              height="30"
-            />
-          </div>
+          <PhotoCell>
+            <img src={value} alt="Visitor" width="30" height="30" />
+          </PhotoCell>
         ),
-        disableSortBy: true, // Disable sorting for this column
+        disableSortBy: true,
       },
     ],
     []
@@ -70,7 +118,7 @@ const ReactVisitorTable = ({ visitors, totalVisitorCount }) => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    page, // Use page instead of rows
+    page,
     prepareRow,
     state: { pageIndex, pageSize },
     setPageSize,
@@ -94,67 +142,104 @@ const ReactVisitorTable = ({ visitors, totalVisitorCount }) => {
   );
 
   return (
-    <div className="data-grid-table">
-      <div className="text-count">
-        <span>
-          <h2>Visitor Data Grid</h2>
-          <input
-            type="text"
-            placeholder="Filter by name or phone number"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            className="border w-56 border-gray-400 rounded px-1 h-8 mb-1"
-          />
-        </span>
-        <h1 className="text-2xl">{totalVisitorCount}</h1>
-      </div>
-      <table {...getTableProps()} className="visitor-table">
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                  {column.render("Header")}
-                  {/* Add a sort direction indicator */}
-                  <span>
-                    {column.isSorted
-                      ? column.isSortedDesc
-                        ? " 🔽"
-                        : " 🔼"
-                      : ""}
-                  </span>
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {page.map((row) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps({ key: row.original.id })}>
-                {row.cells.map((cell) => (
-                  <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <Container
+      maxWidth="lg"
+      sx={{
+        mt: 3,
+        px: {
+          xs: 0,
+          sm: 0,
+          md: 3,
+          lg: 4,
+          xl: 5,
+          marginBottom: 6,
+        },
+      }}
+    >
+      <FilterContainer>
+        <Typography
+          variant="h5"
+          sx={{
+            paddingLeft: {
+              xs: 2,
+            },
+          }}
+        >
+          Today's Visitors
+        </Typography>
+        <TextField
+          sx={{
+            paddingLeft: {
+              xs: 2,
+            },
+          }}
+          variant="outlined"
+          size="small"
+          placeholder="Filter by name or phone number"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+        />
+      </FilterContainer>
 
-      {/* Pagination Controls */}
-      <div className="pagination-controls">
-        <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+      <StyledTableContainer component={Paper}>
+        <Table {...getTableProps()}>
+          <StyledTableHead>
+            {headerGroups.map((headerGroup) => (
+              <TableRow {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column) => (
+                  <StyledTableCell
+                    {...column.getHeaderProps(column.getSortByToggleProps())}
+                  >
+                    {column.render("Header")}
+                    <span>
+                      {column.isSorted
+                        ? column.isSortedDesc
+                          ? " ▲"
+                          : " ▼"
+                        : ""}
+                    </span>
+                  </StyledTableCell>
+                ))}
+              </TableRow>
+            ))}
+          </StyledTableHead>
+          <TableBody {...getTableBodyProps()}>
+            {page.map((row) => {
+              prepareRow(row);
+              return (
+                <TableRow {...row.getRowProps()}>
+                  {row.cells.map((cell) => (
+                    <TableCell {...cell.getCellProps()}>
+                      {cell.render("Cell")}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </StyledTableContainer>
+
+      <PaginationControls>
+        <Button
+          variant="outlined"
+          onClick={() => previousPage()}
+          disabled={!canPreviousPage}
+        >
           Previous
-        </button>
-        <span>
+        </Button>
+        <Typography sx={{ fontSize: { xs: 12, sm: 14, md: 14 }, mt: 1 }}>
           Page {pageIndex + 1} of {pageCount}
-        </span>
-        <button onClick={() => nextPage()} disabled={!canNextPage}>
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={() => nextPage()}
+          disabled={!canNextPage}
+        >
           Next
-        </button>
-      </div>
-    </div>
+        </Button>
+      </PaginationControls>
+    </Container>
   );
 };
 

@@ -35,8 +35,8 @@ const CustomDatePicker = ({ selected, onChange, ...props }) => (
             onChange={({ target: { value } }) => changeYear(value)}
           >
             {Array.from(
-              { length: 10 },
-              (_, i) => new Date().getFullYear() - 5 + i
+              { length: 12 },
+              (_, i) => new Date().getFullYear() - 1 + i
             ).map((year) => (
               <option key={year} value={year}>
                 {year}

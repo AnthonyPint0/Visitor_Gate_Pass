@@ -1,8 +1,17 @@
-// Register_Visitor.jsx
-
 import "./Register_Visitor.css";
-import SideBarNavi from "../../components/SideBarNavi/SideBarNavi.jsx";
-import registerFormIcon from "../../assets/Icons/RegisterFormIcon.svg";
+import {
+  StyledFormControl,
+  StyledInputLabel,
+  StyledTextField,
+  StyledMenuItem,
+  StyledSelect,
+} from "../../components/StyledComponents/StyledComponents.js";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import SendIcon from "@mui/icons-material/Send";
 import { useEffect, useState, useRef } from "react";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,6 +21,7 @@ import CustomDropdown from "../../components/CustomDropDown/CustomDropDown.jsx";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../library/helper.js";
 import CompleteSidebar from "../../components/SideBarNavi/CompleteSidebar.jsx";
+import Footer from "../../components/Footer/Footer.jsx";
 
 function Register_Visitor() {
   const { width, height } = useWindowSize();
@@ -20,6 +30,7 @@ function Register_Visitor() {
   const [name, setName] = useState("");
   const [purposeOfVisit, setPurposeOfVisit] = useState("");
   const [entryGate, setEntryGate] = useState("Gate 1"); // Default entry gate
+  const [vehicleNo, setVehicleNo] = useState("");
   const [groupSize, setGroupSize] = useState(1);
   const [currentDateTime, setCurrentDateTime] = useState("");
   const [hasPhoto, setHasPhoto] = useState(false);
@@ -44,12 +55,12 @@ function Register_Visitor() {
     // Convert all elements in idCards to strings
     const idCardsAsStrings = idCards.map((id) => String(id));
 
-    console.log(
-      `idCards: ${idCardsAsStrings} arraySize: ${idCardsAsStrings.length}`
-    );
+    // console.log(
+    //   `idCards: ${idCardsAsStrings} arraySize: ${idCardsAsStrings.length}`
+    // );
 
     // Log each element with pipes around them to clearly show the boundaries of each string
-    idCardsAsStrings.map((id) => console.log(`|${id}|`));
+    // idCardsAsStrings.map((id) => console.log(`|${id}|`));
   }, [idCards]);
 
   useEffect(() => {
@@ -151,9 +162,13 @@ function Register_Visitor() {
 
   const fetchAvailableCards = async (query) => {
     try {
-      const response = await axios.get(`${API_URL}/available_id_cards`, {
-        params: { query },
-      });
+      const response = await axios.get(
+        `${API_URL}/visitor-groups/search-available-cards`,
+        {
+          params: { query },
+        }
+      );
+      // console.log(response.data);
       return response.data.map((item) => String(item));
     } catch (error) {
       console.error("Error fetching options:", error);
@@ -202,9 +217,12 @@ function Register_Visitor() {
     if (phonenum.length === 10) {
       try {
         // Correctly pass phone_number as query parameter
-        const response = await axios.get(`${API_URL}/phoneNumber`, {
-          params: { phone_number: phonenum },
-        });
+        const response = await axios.get(
+          `${API_URL}/visitors/lookup-by-phone`,
+          {
+            params: { phone_number: phonenum },
+          }
+        );
 
         if (response.data === "") {
           // console.log('Visitor does not exist');
@@ -229,7 +247,7 @@ function Register_Visitor() {
 
   useEffect(() => {
     // Use this effect to do something when purposeOfVisit updates
-    console.log("Updated purposeOfVisit:", purposeOfVisit);
+    // console.log("Updated purposeOfVisit:", purposeOfVisit);
   }, [purposeOfVisit]);
 
   const handlePurposeChange = async (inputValue) => {
@@ -241,15 +259,18 @@ function Register_Visitor() {
     }
 
     try {
-      const response = await axios.get(`${API_URL}/purpose`, {
-        params: { query: inputValue.value },
-      });
+      const response = await axios.get(
+        `${API_URL}/visitor-groups/search-purpose`,
+        {
+          params: { query: inputValue.value },
+        }
+      );
       const newOptions = response.data.map((item) => ({
         value: String(item),
         label: String(item),
       }));
       setFilteredOptions(newOptions);
-      console.log(newOptions);
+      // console.log(newOptions);
     } catch (error) {
       console.error("Error fetching options:", error);
     }
@@ -257,6 +278,10 @@ function Register_Visitor() {
 
   const handleEntryChange = (event) => {
     setEntryGate(event.target.value);
+  };
+
+  const handleVehicleNoChange = (event) => {
+    setVehicleNo(event.target.value);
   };
 
   const handleGroupSizeChange = (event) => {
@@ -364,9 +389,12 @@ function Register_Visitor() {
         return false;
       }
       try {
-        const response = await axios.get(`${API_URL}/checkIDAvailable`, {
-          params: { ID_Array: idCards },
-        });
+        const response = await axios.get(
+          `${API_URL}/visitor-groups/verify-id-availability`,
+          {
+            params: { ID_Array: idCards },
+          }
+        );
         if (!response.data.checking) {
           notifyErr(response.data.msg);
           return false;
@@ -385,7 +413,7 @@ function Register_Visitor() {
     if (visitorExists) {
       try {
         const response = await axios.get(
-          `${API_URL}/checkVisitorAccessibility`,
+          `${API_URL}/visitor-groups/verify-visitor-accessibility`,
           {
             params: { phone_number: phoneNumber },
           }
@@ -409,7 +437,7 @@ function Register_Visitor() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(visitorExists);
+    // console.log(visitorExists);
 
     if (phoneNumber.length !== 10) {
       notifyErr("Please fill Phone number appropriately");
@@ -428,6 +456,11 @@ function Register_Visitor() {
 
     if (!entryGate) {
       notifyErr("Please provide an entry gate");
+      return;
+    }
+
+    if (entryGate === "Gate 2" && !vehicleNo) {
+      notifyErr("Please provide a vehicle number for Gate 2");
       return;
     }
 
@@ -457,23 +490,22 @@ function Register_Visitor() {
       return;
     }
 
-    console.log(`bananas`);
-
     const finalData = {
       PhoneNumber: phoneNumber,
       Name: name,
       PurposeOfVisit: purposeOfVisit,
       EntryGate: entryGate,
+      VehicleNo: vehicleNo || null,
       GroupSize: groupSize,
       Checkin_time: new Date(),
       IdCards: idCards,
       Photo: photoDataUrl,
     };
 
-    console.log(finalData);
+    // console.log(finalData);
 
     try {
-      const response = await axios.post(`${API_URL}/register_Checkin_Visitor`, {
+      const response = await axios.post(`${API_URL}/visitors/checkin-visitor`, {
         params: { VisitorSessionInfo: finalData },
       });
       if (response.data.checking) {
@@ -498,6 +530,7 @@ function Register_Visitor() {
     setName("");
     setPurposeOfVisit("");
     setEntryGate("Gate 1"); // Default entry gate
+    setVehicleNo(""); // New state variable to hold the vehicle number
     setGroupSize(1);
     // const [currentDateTime, setCurrentDateTime] = useState('');
     setHasPhoto(false);
@@ -513,112 +546,182 @@ function Register_Visitor() {
     setFilteredICards([]);
   };
 
+  // Import other necessary components and hooks
+
   return (
     <div className="fakeBody">
       <div className="totalContent">
         <div className="content">
-          <CompleteSidebar isActive="registerVisitor" />
-          <ToastContainer />
-          <main className="mainContent">
-            <div className="register-form">
-              <div className="form-title">
-                <div className="icon-text">
-                  <img src={registerFormIcon} alt="registerFormIcon.svg" />
-                  <h2>Visitor Registration</h2>
-                </div>
-                <div className="lines">
-                  <div className="line1" />
-                  <div className="line2" />
-                </div>
-              </div>
-              <form className="main-form">
-                <div className="sections">
-                  <div className="left-section-form">
-                    <div className="text-inputs">
-                      <div className="text-boxes">
-                        <label htmlFor="phoneno">Phone No:</label>
-                        <input
-                          type="tel"
-                          name="phoneno"
-                          id="phoneno"
-                          value={phoneNumber}
-                          onChange={handlePhonenoChange}
-                        />
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="name">Name:</label>
-                        <input
-                          type="text"
-                          name="name"
-                          id="name"
-                          ref={NameInputRef}
-                          value={name}
-                          onChange={handleNameChange}
-                        />
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="purpose">Purpose of Visit:</label>
-                        <CustomDropdown
-                          id="purpose"
-                          name="purpose"
-                          value={purposeOfVisit}
-                          onChange={handlePurposeChange}
-                          options={filteredOptions}
-                          placeholder="Select..."
-                        />
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="entry">Entry Gate:</label>
-                        <select
-                          name="entry"
-                          id="entry"
-                          value={entryGate}
-                          onChange={handleEntryChange}
-                        >
-                          <option value="Gate 1">Gate 1</option>
-                          <option value="Gate 2">Gate 2</option>
-                        </select>
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="groupSize">Group Size:</label>
-                        <select
-                          name="groupSize"
-                          id="groupSize"
-                          value={groupSize}
-                          onChange={handleGroupSizeChange}
-                        >
-                          {[1, 2, 3, 4, 5].map((size) => (
-                            <option key={size} value={size}>
-                              {size}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="checkInTime">Check-in Time:</label>
-                        <input
-                          type="text"
-                          name="checkInTime"
-                          id="checkInTime"
-                          value={currentDateTime}
-                          readOnly
-                        />
-                      </div>
-                    </div>
-                    <div className="ID-selects">
-                      <div className="text-boxes">
-                        <label>ID Selections</label>
-                        <div className="ID-drops">
+          <Box sx={{ display: "flex" }}>
+            {/* Keep Sidebar and ToastContainer as they are */}
+            <CompleteSidebar isActive="registerVisitor" />
+            <ToastContainer />
+            <main className="mainContent">
+              <div className="register-form">
+                {/* <Box
+                  component="main"
+                  flex="1"
+                  display="flex"
+                  flexDirection="column"
+                > */}
+                <Box
+                  sx={{
+                    p: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    flexGrow: 1,
+                    overflow: "auto",
+                  }}
+                >
+                  <h2
+                    style={{
+                      width: "100%",
+                      height: "fit-content",
+                      fontFamily: "Roboto, Poppins",
+                      fontSize: "16px",
+                      fontWeight: 500,
+                      borderBottom: "1px solid rgb(183, 183, 183)",
+                    }}
+                  >
+                    Visitor Registration
+                  </h2>
+                  <form>
+                    <Box
+                      display="flex"
+                      flexDirection={{ xs: "column", md: "row" }}
+                      justifyContent="space-between"
+                      mb={2}
+                    >
+                      {/* Left Section */}
+                      <Box
+                        sx={{
+                          flexBasis: "65%",
+                          "& > :not(style)": {
+                            m: 1,
+                            width: { xs: "85%", sm: "260px" },
+                          },
+                          height: { xs: "auto", sm: "200px", md: "300px" },
+                        }}
+                      >
+                        <StyledFormControl>
+                          <StyledInputLabel>Phone Number</StyledInputLabel>
+                          <StyledTextField
+                            type="tel"
+                            variant="outlined"
+                            id="phoneno"
+                            value={phoneNumber}
+                            onChange={handlePhonenoChange}
+                          />
+                        </StyledFormControl>
+
+                        <StyledFormControl>
+                          <StyledInputLabel htmlFor="name">
+                            Full Name
+                          </StyledInputLabel>
+                          <StyledTextField
+                            type="text"
+                            variant="outlined"
+                            id="name"
+                            name="name"
+                            ref={NameInputRef}
+                            value={name}
+                            onChange={handleNameChange}
+                          />
+                        </StyledFormControl>
+
+                        <StyledFormControl>
+                          <StyledInputLabel htmlFor="purpose">
+                            Purpose of Visit
+                          </StyledInputLabel>
+                          <CustomDropdown
+                            id="purpose"
+                            name="purpose"
+                            widths={217}
+                            value={purposeOfVisit}
+                            onChange={handlePurposeChange}
+                            options={filteredOptions}
+                            placeholder="Select..."
+                          />
+                        </StyledFormControl>
+
+                        <StyledFormControl>
+                          <StyledInputLabel id="entry">
+                            Entry Gate
+                          </StyledInputLabel>
+                          <StyledSelect
+                            name="entry"
+                            id="entry"
+                            value={entryGate}
+                            onChange={handleEntryChange}
+                          >
+                            <StyledMenuItem value="Gate 1">
+                              Gate 1
+                            </StyledMenuItem>
+                            <StyledMenuItem value="Gate 2">
+                              Gate 2
+                            </StyledMenuItem>
+                          </StyledSelect>
+                        </StyledFormControl>
+
+                        {entryGate === "Gate 2" && (
+                          <StyledFormControl>
+                            <StyledInputLabel htmlFor="vehicle_no">
+                              Vehicle Number
+                            </StyledInputLabel>
+                            <StyledTextField
+                              type="text"
+                              variant="outlined"
+                              id="vehicle_no"
+                              name="vehicle_no"
+                              value={vehicleNo}
+                              onChange={handleVehicleNoChange}
+                            />
+                          </StyledFormControl>
+                        )}
+
+                        <StyledFormControl>
+                          <StyledInputLabel htmlFor="group">
+                            Group Size
+                          </StyledInputLabel>
+                          <StyledSelect
+                            type="number"
+                            variant="outlined"
+                            id="group"
+                            value={groupSize}
+                            onChange={handleGroupSizeChange}
+                          >
+                            {[1, 2, 3, 4, 5].map((size) => (
+                              <StyledMenuItem key={size} value={size}>
+                                {size}
+                              </StyledMenuItem>
+                            ))}
+                          </StyledSelect>
+                        </StyledFormControl>
+
+                        <StyledFormControl>
+                          <StyledInputLabel htmlFor="datetime">
+                            Check-in Time
+                          </StyledInputLabel>
+                          <StyledTextField
+                            type="text"
+                            variant="outlined"
+                            id="datetime"
+                            name="datetime"
+                            value={currentDateTime}
+                            fullWidth
+                            aria-readonly
+                          />
+                        </StyledFormControl>
+
+                        <StyledFormControl>
+                          <StyledInputLabel>Select IDs</StyledInputLabel>
                           {Array.from({ length: groupSize }, (_, index) => (
-                            <span
-                              className="idcardsSelects"
-                              key={index}
-                              id={`idSelect${index + 1}`}
-                            >
+                            <Box key={index} sx={{ mb: 2 }}>
                               <CustomDropdown
+                                isTop={true}
                                 id={`id${index + 1}`}
                                 name={`id${index + 1}`}
-                                widths={50}
+                                widths={217}
                                 option_width={50}
                                 search_box_width={135}
                                 types="number"
@@ -629,100 +732,205 @@ function Register_Visitor() {
                                 options={filteredICards}
                                 placeholder="ID"
                               />
-                            </span>
+                            </Box>
                           ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="right-section-form">
-                    <div className="photo-frame">
-                      <label>Photo</label>
-                      <div className="live-videos">
-                        <video
-                          ref={videoRef}
-                          style={{ display: isCameraON ? "block" : "none" }}
-                        />
-                      </div>
-                      <div className="buttons-">
-                        {!isCameraON && (
-                          <button
-                            type="button"
-                            style={{ backgroundColor: "#16a34a" }}
-                            onClick={onCamera}
-                          >
-                            Turn Camera On
-                          </button>
-                        )}
-                        {isCameraON && (
-                          <button
-                            type="button"
-                            style={{ backgroundColor: "#dc2626" }}
-                            onClick={onCamera}
-                          >
-                            Turn Camera Off
-                          </button>
-                        )}
-                        {isCameraON && (
-                          <button type="button" onClick={capturePhoto}>
-                            Capture Photo
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="resulter">
-                      <div className={"result " + (hasPhoto ? "hasPhoto" : "")}>
-                        <canvas ref={photoRef} style={{ display: "none" }} />
-                        {/* Display the captured photo */}
-                        {photoDataUrl && (
-                          <img src={photoDataUrl} alt="Captured" />
-                        )}
-                        {hasPhoto && (
-                          <button
-                            type="button"
-                            style={{
-                              padding: "2px 5px 4px",
-                              borderRadius: "20px",
-                              margin: "2px",
-                              textAlign: "center",
-                              backgroundColor: "#dc2626",
+                        </StyledFormControl>
+                      </Box>
+
+                      {/* Right Section */}
+                      <Box
+                        sx={{
+                          flexBasis: "35%",
+                          minWidth: "310px",
+                          width: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          flex: 1,
+                        }}
+                      >
+                        <Box
+                          className="photo-frame"
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            minWidth: "100%",
+                            width: "90%",
+                            height: "fit-content",
+                          }}
+                        >
+                          <StyledInputLabel sx={{ fontSize: "12px" }}>
+                            Photo
+                          </StyledInputLabel>
+                          <Box
+                            className="live-videos"
+                            sx={{
+                              width: "300px",
+                              minWidth: "300px",
+                              height: "auto",
+                              minHeight: "150px",
+                              maxWidth: "400px",
+                              border: "1px solid #000",
+                              borderRadius: "5px",
+                              backgroundColor: "#282828",
                             }}
-                            onClick={clearPhoto}
                           >
-                            x
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    {/* Add any additional footer elements here */}
-                  </div>
-                </div>
-                <div className="form-footer">
-                  <button
-                    onClick={handleSubmit}
-                    style={{ backgroundColor: "#16a34a" }}
-                  >
-                    Submit
-                  </button>
-                  <button type="reset" onClick={handleClear}>
-                    Clear
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleClear();
-                      navigate("/dashboard");
+                            <video
+                              ref={videoRef}
+                              style={{
+                                display: isCameraON ? "block" : "none",
+                                width: "100%",
+                                height: "auto",
+                              }}
+                            />
+                          </Box>
+                          <Stack spacing={2} direction="column" sx={{ mt: 2 }}>
+                            {!isCameraON && (
+                              <Button
+                                variant="contained"
+                                onClick={onCamera}
+                                sx={{
+                                  textTransform: "none",
+                                  borderRadius: 2,
+                                }}
+                              >
+                                Turn Camera On
+                              </Button>
+                            )}
+                            {isCameraON && (
+                              <Button
+                                variant="contained"
+                                onClick={onCamera}
+                                color="error"
+                                sx={{
+                                  textTransform: "none",
+                                  borderRadius: 2,
+                                }}
+                              >
+                                Turn Camera Off
+                              </Button>
+                            )}
+                            {isCameraON && (
+                              <Button
+                                variant="contained"
+                                onClick={capturePhoto}
+                                sx={{
+                                  textTransform: "none",
+                                  borderRadius: 2,
+                                  backgroundColor: "#239700",
+                                }}
+                              >
+                                Capture Photo
+                              </Button>
+                            )}
+                          </Stack>
+                        </Box>
+                        <Box
+                          className="resulter"
+                          sx={{
+                            mt: 2,
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "center",
+                            position: "relative",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "start",
+                              mr: -4,
+                            }}
+                            className={"result " + (hasPhoto ? "hasPhoto" : "")}
+                          >
+                            <canvas
+                              ref={photoRef}
+                              style={{
+                                display: "none",
+                              }}
+                            />
+                            {photoDataUrl && (
+                              <img src={photoDataUrl} alt="Captured" />
+                            )}
+                            {hasPhoto && (
+                              <IconButton
+                                type="button"
+                                onClick={clearPhoto}
+                                sx={{ mt: -1.5, ml: -1 }}
+                              >
+                                <CancelOutlinedIcon color="error" />
+                              </IconButton>
+                            )}
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </form>
+
+                  {/* Footer Buttons */}
+                  <Box
+                    sx={{
+                      mt: "auto",
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      borderTop: "1px solid rgb(183, 183, 183)",
+                      pt: 2,
+                      backgroundColor: "#fff",
                     }}
-                    style={{ backgroundColor: "#dc2626" }}
                   >
-                    Cancel
-                  </button>
-                  {/* Add any additional footer elements here */}
-                </div>
-              </form>
-            </div>
-          </main>
+                    <Stack direction="row" spacing={2}>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        sx={{
+                          color: "white",
+                          textTransform: "none",
+                          borderRadius: 1,
+                        }}
+                        onClick={() => {
+                          handleClear();
+                          navigate("/dashboard");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{
+                          color: "white",
+                          textTransform: "none",
+                          borderRadius: 1,
+                        }}
+                        onClick={handleClear}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="outlined"
+                        endIcon={<SendIcon />}
+                        sx={{
+                          color: "white",
+                          backgroundColor: "#239700",
+                          textTransform: "none",
+                          borderRadius: 1,
+                        }}
+                        onClick={handleSubmit}
+                      >
+                        Submit
+                      </Button>
+                    </Stack>
+                  </Box>
+                </Box>
+                {/* </Box> */}
+              </div>
+            </main>
+          </Box>
         </div>
+        <Footer />
       </div>
     </div>
   );

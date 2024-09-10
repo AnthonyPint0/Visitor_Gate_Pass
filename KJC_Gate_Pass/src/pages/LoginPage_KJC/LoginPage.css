@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
 
 .totalContent {
   display: flex;
@@ -11,8 +10,14 @@
   font-weight: 400;
 }
 
+/* .fakeBody {
+  height: 100%;
+  width: 100%;
+overflow: hidden; /* Correctly written without quotes */
+
 .headerLogo {
   padding: 10px 25px 5px;
+  z-index: -1;
 }
 
 .imageLogin {
@@ -81,12 +86,12 @@
   width: 100%;
 }
 
-label{
-    font-weight: 400;
-    font-size: 14.36px;
-    color: black;
-    margin-bottom: 3px;
-    cursor: default;
+label {
+  font-weight: 400;
+  font-size: 14.36px;
+  color: black;
+  margin-bottom: 3px;
+  cursor: default;
 }
 
 .textInput p {
@@ -105,7 +110,7 @@ label{
   padding: 0px 15px 0px 0px;
 }
 
-label{
+label {
   font-size: 1rem;
 }
 
@@ -115,7 +120,7 @@ label{
   border: 1px solid rgba(102, 102, 102, 0.359);
   border-radius: 10.55px;
   padding: 5px 10px;
-  font-size: 1.0rem;
+  font-size: 1rem;
   margin: 5px 0px 0px;
 }
 
@@ -132,7 +137,7 @@ label{
   cursor: pointer;
 }
 
-.textHide div p{
+.textHide div p {
   cursor: pointer;
 }
 
@@ -153,14 +158,14 @@ label{
   padding: 8px 8px;
   text-align: center;
   border-radius: 23.5px;
-  cursor: pointer; 
+  cursor: pointer;
 }
 
 .loginForm a {
   color: #065a99;
 }
 
-#forgetPwd{
+#forgetPwd {
   font-size: 0.9rem;
 }
 
@@ -178,46 +183,43 @@ label{
 }
 
 @media (max-width: 1024px) {
-  .textImage .textOnly #text1{
+  .textImage .textOnly #text1 {
     font-size: 28px !important;
   }
 
-  .textOnly #text2{
+  .textOnly #text2 {
     font-size: 16px !important;
   }
 
-  .textImage img{
+  .textImage img {
     width: 329px;
     height: 234.9px;
   }
-
-
 }
 
 @media (max-width: 460px) {
-  .loginForm{
+  .loginForm {
     width: 390px !important;
     height: auto !important;
   }
 }
 
 @media (max-width: 362px) {
-  .textImage img{
+  .textImage img {
     height: 232.9px !important;
     width: auto !important;
   }
 
-  .headerLogo{
+  .headerLogo {
     padding: 10px 5px 5px !important;
   }
 
-  .headerLogo img{
+  .headerLogo img {
     width: 300px;
     height: auto;
   }
 
-  .footer .CPtexts p{
+  .footer .CPtexts p {
     font-size: 14px;
   }
-
 }

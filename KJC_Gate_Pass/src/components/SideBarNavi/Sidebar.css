@@ -90,7 +90,7 @@
   justify-content: space-between;
   align-items: center;
   width: fit-content; /* w-52 */
-  margin-left: 12px; /* ml-3 */
+  margin-left: 5px; /* ml-3 */
   opacity: 1;
   transition: all 0.3s ease; /* transition-all */
 }
@@ -101,6 +101,7 @@
 }
 
 .user-profile-details-texts {
+  position: relative;
   line-height: 1.3rem;
   padding-right: 8px;
 }
@@ -112,6 +113,9 @@
 
 .user-profile-details-texts-email {
   color: #4b5563; /* The color value for text-gray-600 */
+  display: inline-block;
+  width: 130px;
+  overflow: hidden;
   font-size: 12px;
 }
 
@@ -176,4 +180,10 @@
 
 .logout-icon {
   color: #dc2626;
+}
+
+@media (min-width: 900px) {
+  .sidebar {
+    padding-bottom: 40px;
+  }
 }

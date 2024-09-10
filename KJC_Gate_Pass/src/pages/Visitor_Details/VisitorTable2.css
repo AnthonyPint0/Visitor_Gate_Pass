@@ -1,5 +1,4 @@
 .vt_table-container {
-  min-width: 380px;
   width: 100%;
   overflow-x: auto;
   margin: 0 auto;
@@ -98,7 +97,7 @@
 .visitorDetails_image_container {
   background-color: grey;
   height: 150px;
-  min-width: 150px;
+  width: 150px;
 }
 
 .vt_main-section-form {
@@ -199,7 +198,7 @@
   align-items: center;
   font-weight: 500;
   color: white;
-  width: fit-content;
+  
   height: fit-content;
   padding: 5px 8px 6px 8px;
   border-radius: 5px;
@@ -209,7 +208,7 @@
 .vt_right-section-formm {
   justify-items: center;
   align-items: center;
-  width: fit-content;
+ 
   height: 180px;
   display: flex;
   flex-direction: column;

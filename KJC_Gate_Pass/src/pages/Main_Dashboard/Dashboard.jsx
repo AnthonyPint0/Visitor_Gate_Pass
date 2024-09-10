@@ -1,5 +1,3 @@
-//Dasboard.jsx
-
 import "./Dashboard.css";
 import DashboardWidget from "./DashboardWidget.jsx";
 import ReactVisitorTable from "../../components/VisitorTable/ReactVisitorTable.jsx";
@@ -12,8 +10,9 @@ import { API_BASE_URL } from "../../library/helper.js";
 import { useEffect, useState } from "react";
 
 import useWindowSize from "../../hooks/useWindowSize";
-import axios from "axios"; // Import axios
+import axios from "axios";
 import CompleteSidebar from "../../components/SideBarNavi/CompleteSidebar.jsx";
+import Footer from "../../components/Footer/Footer.jsx";
 
 function Dashboard() {
   const { width, height } = useWindowSize();
@@ -24,7 +23,9 @@ function Dashboard() {
   useEffect(() => {
     const fetchVisitorData = async () => {
       try {
-        const response = await axios.get(`${API_URL}/visitors`);
+        const response = await axios.get(
+          `${API_URL}/visitors/visitor-sessions`
+        );
         setVisitorData(response.data);
         setLoading(false);
       } catch (error) {
@@ -57,50 +58,48 @@ function Dashboard() {
   totalVisitors = checkedInVisitors + checkedOutVisitors;
 
   return (
-    <div className="fakeBody">
-      <div className="totalContent">
-        <div className="content">
-          <CompleteSidebar isActive="dashboard" />
-          <main className="main-content">
-            <div className="Widgets">
-              <DashboardWidget
-                isCountWidget={true}
-                icon={totalVisitorIcons}
-                widgets="totalVisitorCount"
-                title="Total Visitor"
-                count={totalVisitors}
+    <div className="totalContent">
+      <div className="content">
+        <CompleteSidebar isActive="dashboard" />
+        <main className="main-content" style={{ paddingBottom: "50px" }}>
+          <div className="Widgets">
+            <DashboardWidget
+              isCountWidget={true}
+              icon={totalVisitorIcons}
+              widgets="totalVisitorCount"
+              title="Total Visitor"
+              count={totalVisitors}
+            />
+            <DashboardWidget
+              isCountWidget={true}
+              icon={CheckinCountICon}
+              widgets="checkinVisitorCount"
+              title="Check-in Visitor"
+              count={checkedInVisitors}
+            />
+            <DashboardWidget
+              isCountWidget={true}
+              icon={CheckoutCountICon}
+              widgets="checkoutVisitorCount"
+              title="Check-out Visitor"
+              count={checkedOutVisitors}
+            />
+          </div>
+          <div className="data-grid">
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <ReactVisitorTable
+                visitors={visitorData}
+                isLoading={loading}
+                totalVisitorCount={totalVisitors}
               />
-              <DashboardWidget
-                isCountWidget={true}
-                icon={CheckinCountICon}
-                widgets="checkinVisitorCount"
-                title="Check-in Visitor"
-                count={checkedInVisitors}
-              />
-              <DashboardWidget
-                isCountWidget={true}
-                icon={CheckoutCountICon}
-                widgets="checkoutVisitorCount"
-                title="Check-out Visitor"
-                count={checkedOutVisitors}
-              />
-              {/* <DashboardWidget isCountWidget={false} icon={registerIcon} widgets='registerVisitor' title='Register Visitor' />
-              <DashboardWidget isCountWidget={false} icon={checkinIcon} widgets='checkinVisitor' title='Check-in Visitor' />
-              <DashboardWidget isCountWidget={false} icon={checkoutIcon} widgets='checkoutVisitor' title='Check-out Visitor' /> */}
-            </div>
-            <div className="data-grid">
-              {loading ? (
-                <LoadingSpinner /> // Show spinner while loading
-              ) : (
-                <ReactVisitorTable
-                  visitors={visitorData}
-                  isLoading={loading}
-                  totalVisitorCount={totalVisitors}
-                />
-              )}
-            </div>
-          </main>
-        </div>
+            )}
+          </div>
+        </main>
+      </div>
+      <div className="footer-style">
+        <Footer />
       </div>
     </div>
   );
