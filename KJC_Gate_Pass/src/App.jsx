@@ -7,6 +7,7 @@ import Checkout_Visitor from "./pages/Checkout_Visitor/Checkout_Visitor.jsx";
 import Visitor_Details from "./pages/Visitor_Details/Visitor_Details.jsx";
 import Pre_Approve from "./pages/Pre_Approve/Pre_Approve.jsx";
 import PrivateRoute from "./components/PrivateRoute"; // Make sure the path is correct
+import Checkin_Guest from "./pages/Checkin_Guest/Checkin_Guest.jsx";
 
 function App() {
   return (
@@ -37,6 +38,12 @@ function App() {
           path="/visitor_details"
           element={
             <PrivateRoute element={<Visitor_Details />} roles={["security"]} />
+          }
+        />
+        <Route
+          path="/checkin_guest"
+          element={
+            <PrivateRoute element={<Checkin_Guest />} roles={["security"]} />
           }
         />
 

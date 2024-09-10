@@ -225,6 +225,9 @@ function Checkout_Visitor() {
       if (response.status === 200) {
         notifySuccess("Checkout completed successfully.");
         handleClear();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         notifyErr("Failed to complete checkout.");
       }
