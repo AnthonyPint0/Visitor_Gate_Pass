@@ -1,29 +1,30 @@
 const nodemailer = require("nodemailer");
-const GuestModel = require("../models/guest"); // Adjust the path to your GuestModel
-const { getEmailTemplate } = require("./emailTemplateService"); // Ensure correct path and import
-const formatDateWithPadding = require("../library/helper");
-const { validationResult } = require("express-validator"); // Ensure express-validator is set up
+const { getEmailTemplate } = require("./emailTemplateService"); // Ensure correct path
+require("dotenv").config();
 
 const sendEmailAndSaveGuest = async (guest, subject, replacements) => {
   try {
-    const template = await getEmailTemplate(); // Call the function
-    let emailTemplate = template.template;
-
-    if (!emailTemplate) {
+    // Retrieve email template
+    const template = await getEmailTemplate();
+    if (!template || !template.template) {
       throw new Error("Email template not found");
     }
 
-    // Replace all placeholders in the template
-    let emailHtml = emailTemplate.replace(
-      /\${(.*?)}/g,
-      (match) => replacements[match] || match
+    console.log(replacements);
+    // Replace placeholders in the template
+    let emailHtml = template.template.replace(
+      /{{(.*?)}}/g, // Regex to match {{placeholder}}
+      (match, key) => {
+        const trimmedKey = key.trim();
+        return replacements[trimmedKey] || match; // Replace placeholder with value or leave as-is
+      }
     );
 
     // Configure nodemailer
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === "true",
+      secure: process.env.SMTP_SECURE === "true", // Ensure this is a boolean
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -44,9 +45,11 @@ const sendEmailAndSaveGuest = async (guest, subject, replacements) => {
     // Send the email
     await transporter.sendMail(mailOptions);
 
+    console.log(`Invitation email sent to ${guest.email}`);
+
     return true;
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error sending email:", error.message);
     throw new Error("Failed to send email");
   }
 };
@@ -59,10 +62,11 @@ const updateGuest = async (guest, isNewInvitation) => {
       guest.noOfemailSent = (guest.noOfemailSent || 0) + 1; // Increment noOfemailSent
     }
 
+    // Save the updated guest record
     await guest.save();
     return guest;
   } catch (error) {
-    console.error("Error updating guest:", error);
+    console.error("Error updating guest:", error.message);
     throw new Error("Failed to update guest");
   }
 };

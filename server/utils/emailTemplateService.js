@@ -1,4 +1,4 @@
-const EmailTemplateModel = require("../pre_approval_models/EmailTemplate");
+const EmailTemplateModel = require("../models/EmailTemplate");
 
 async function getEmailTemplate() {
   // Fetch the email template from the database using the ID

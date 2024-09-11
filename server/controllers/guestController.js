@@ -5,12 +5,9 @@ const {
   authenticateToken,
   authorizeRole,
 } = require("../middleware/authMiddleware");
-const formatDateTime = require("../utils/dateUtils"); // Import your date formatting
-const nodemailer = require("nodemailer");
-const getEmailTemplate = require("../utils/emailTemplateService");
-const { validationResult } = require("express-validator");
 const formatDateWithPadding = require("../library/helper");
 const { sendEmailAndSaveGuest, updateGuest } = require("../utils/sendEmail"); // Adjust the path to your utilities
+const { validationResult } = require("express-validator");
 
 const sendInvitation = async (req, res) => {
   const errors = validationResult(req);
@@ -41,22 +38,19 @@ const sendInvitation = async (req, res) => {
       mobile,
       event,
       invitedAs,
+      whoCreated: userINFO.email,
       eventDateTime,
       noOfemailSent: 1,
     });
 
     const replacements = {
-      "${name}": name,
-      "${eventDateTime}": formatDateWithPadding(eventDateTime),
-      "${passId}": passId,
-      "${eventName}": event,
-      "${contactEmail}": userINFO
-        ? userINFO.email
-        : "anthonypinto081@gmail.com",
-      "${contactPhoneNumber}": userINFO ? userINFO.phone_number : "0000000000",
-      "${contactemail}": userINFO
-        ? userINFO.email
-        : "anthonypinto081@gmail.com",
+      Gname: name,
+      eventDateTime: formatDateWithPadding(eventDateTime),
+      passId: passId,
+      eventName: event,
+      contactEmail: userINFO ? userINFO.email : "somethingWrong123@gmail.com",
+      contactPhoneNumber: userINFO ? userINFO.phone_number : "0000000000",
+      contactEmail: userINFO ? userINFO.email : "somethingWrong123@gmail.com",
     };
 
     await sendEmailAndSaveGuest(
@@ -75,21 +69,24 @@ const sendInvitation = async (req, res) => {
 
 const getGuestHistory = async (req, res) => {
   try {
-    const guests = await GuestModel.find();
+    const { HODEmail } = req.query; // Extract HODEmail from query params
+
+    // Fetch guests created by the specific HOD (filtered by HODEmail)
+    const guests = await GuestModel.find({ whoCreated: HODEmail });
     console.log("Guest history served");
+
+    // Return the filtered guests in the response
     res.status(200).json(guests);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching guest history:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
 const getUpcomingEvents = async (req, res) => {
   try {
-    // Get the current date and time
     const currentDate = new Date();
     console.log("Current date and time:", currentDate);
-    // Find guests with eventDateTime in the future (upcoming events)
     const upcomingEvents = await GuestModel.find({
       eventDateTime: { $gte: currentDate },
     });
@@ -117,17 +114,13 @@ const resendInvitation = async (req, res) => {
     }
 
     const replacements = {
-      "${name}": guest.name,
-      "${eventDateTime}": formatDateWithPadding(guest.eventDateTime),
-      "${passId}": passId,
-      "${eventName}": guest.event || "Our Event",
-      "${contactEmail}": userInfo
-        ? userInfo.email
-        : "anthonypinto081@gmail.com",
-      "${contactPhoneNumber}": userInfo ? userInfo.phone_number : "0000000000",
-      "${contactemail}": userInfo
-        ? userInfo.email
-        : "anthonypinto081@gmail.com",
+      Gname: guest.name,
+      eventDateTime: formatDateWithPadding(guest.eventDateTime),
+      passId: guest.passId,
+      eventName: guest.event || "Our Event",
+      contactEmail: userInfo ? userInfo.email : "somethingWrong123@gmail.com",
+      contactPhoneNumber: userInfo ? userInfo.phone_number : "0000000000",
+      contactemail: userInfo ? userInfo.email : "somethingWrong123@gmail.com",
     };
 
     await sendEmailAndSaveGuest(
@@ -167,17 +160,13 @@ const updateInvitation = async (req, res) => {
 
     // Prepare email replacements, fallback to default contact details if userInfo is missing
     const replacements = {
-      "${name}": guest.name,
-      "${eventDateTime}": formatDateWithPadding(guest.eventDateTime),
-      "${passId}": guest.passId,
-      "${eventName}": guest.event || "Our Event",
-      "${contactEmail}": userInfo
-        ? userInfo.email
-        : "anthonypinto081@gmail.com",
-      "${contactPhoneNumber}": userInfo ? userInfo.phone_number : "0000000000",
-      "${contactemail}": userInfo
-        ? userInfo.email
-        : "anthonypinto081@gmail.com",
+      Gname: guest.name,
+      eventDateTime: formatDateWithPadding(guest.eventDateTime),
+      passId: guest.passId,
+      eventName: guest.event || "Our Event",
+      contactEmail: userInfo ? userInfo.email : "somethingWrong123@gmail.com",
+      contactPhoneNumber: userInfo ? userInfo.phone_number : "0000000000",
+      contactEmail: userInfo ? userInfo.email : "somethingWrong123@gmail.com",
     };
 
     // Send the email with updated guest information

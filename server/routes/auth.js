@@ -69,35 +69,40 @@ router.post("/login", async (req, res) => {
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, role, phone_number } = req.body;
+    const { name, email, password, role, phone_number, access_code } = req.body;
 
-    // Check if all required fields are provided
-    if (!name || !email || !password || !role || !phone_number) {
-      return res.status(400).json({ message: "All fields are required." });
+    if (access_code === "QAZ-PLM") {
+      // Check if all required fields are provided
+      if (!name || !email || !password || !role || !phone_number) {
+        return res.status(400).json({ message: "All fields are required." });
+      }
+
+      // Check if the user already exists
+      const existingUser = await UsersModel.findOne({ email });
+      if (existingUser) {
+        return res
+          .status(400)
+          .json({ message: "User already exists with this email." });
+      }
+
+      // Create a new user instance
+      const newUser = new UsersModel({
+        name,
+        email,
+        password, // Password will be hashed in the schema pre-save hook
+        role,
+        phone_number,
+      });
+
+      // Save the user to the database
+      await newUser.save();
+
+      // Respond with a success message
+      res.status(201).json({ message: "User registered successfully!" });
+    } else {
+      res.status(401).json({ message: "Access Denied" });
+      console.error("Access Denied");
     }
-
-    // Check if the user already exists
-    const existingUser = await UsersModel.findOne({ email });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User already exists with this email." });
-    }
-
-    // Create a new user instance
-    const newUser = new UsersModel({
-      name,
-      email,
-      password, // Password will be hashed in the schema pre-save hook
-      role,
-      phone_number,
-    });
-
-    // Save the user to the database
-    await newUser.save();
-
-    // Respond with a success message
-    res.status(201).json({ message: "User registered successfully!" });
   } catch (err) {
     console.error("Error during user registration:", err);
     res

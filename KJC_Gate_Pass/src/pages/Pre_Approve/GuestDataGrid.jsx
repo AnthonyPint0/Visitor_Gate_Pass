@@ -26,15 +26,19 @@ const GuestDataGrid = ({ userINFO }) => {
     const fetchGuestHistory = async () => {
       try {
         const token = localStorage.getItem("token");
-
+        const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
+        const userEmail = payload.email;
         if (!token) {
           console.error("No token found");
           return;
         }
 
         const response = await axios.get(`${API_URL}/guest/guest-history`, {
+          params: {
+            HODEmail: userEmail, // Send HODEmail as query param
+          },
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Ensure Bearer token is correctly formatted
           },
         });
 

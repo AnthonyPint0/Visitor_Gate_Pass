@@ -8,6 +8,7 @@ const GuestSchema = new mongoose.Schema({
   mobile: { type: String, required: true },
   event: { type: String, required: true },
   invitedAs: { type: String, required: true },
+  whoCreated: { type: String, required: true },
   eventDateTime: { type: Date, required: true },
   isVisited: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

@@ -10,6 +10,7 @@ const connectDB = require("./config/db");
 const bodyParser = require("body-parser");
 const guestRoutes = require("./routes/guest");
 const securityRoutes = require("./routes/security");
+const intializeDB = require("./routes/initialize");
 
 const app = express();
 require("dotenv").config();
@@ -44,6 +45,7 @@ app.use("/auth", authRoutes);
 app.use("/visitors", visitorRoutes);
 app.use("/visitor-groups", visitorGroupRoutes);
 app.use("/reports", reportRoutes);
+app.use("/initailize", intializeDB);
 
 const PORT = process.env.PORT || 3002;
 
