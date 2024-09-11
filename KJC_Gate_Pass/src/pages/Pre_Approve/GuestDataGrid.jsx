@@ -424,6 +424,7 @@ const GuestDataGrid = ({ userINFO }) => {
         editMode[params.id] ? (
           <input
             value={params.value}
+            readOnly
             onChange={(e) => {
               e.stopPropagation();
               handleCellEditCommit({
