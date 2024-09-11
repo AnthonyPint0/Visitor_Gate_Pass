@@ -2,111 +2,92 @@
 
 /* General reset and base styling */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
 }
 
 /* Full viewport height and width for main content */
 .totalContent {
-    width: 100vw !important;
-    height: 100vh !important;
-}
-
-/* Sidebar styling */
-.fakeSideBAr {
-    width: 175px;
+  width: 100vw !important;
+  height: 100vh !important;
 }
 
 /* Main content area flexbox */
 .mainContent {
-    display: flex;
-    height: 100%;
-    width: 100%;
-    overflow: auto;
-    padding: 10px;
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: auto;
+  padding: 10px;
 }
 
 /* Form container */
 .checkout-register-form {
-    display: inline-flex;
-    flex-direction: column;
-    width: 100%;
-    height: fit-content;
-    background-color: white;
-    border: 0.5px solid black;
-    border-radius: 2px;
-    overflow: auto;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  /* overflow: auto; */
 }
 
-.checkout-register-form .left-section-form{
-    /* flex: 1 0 100px; */
-    flex: 2;
+/* .checkout-register-form .left-section-form {
+  flex: 1 0 100px;
+  flex: 2;
+} */
+/* .fetch-ids {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: start;
+  border: 0.5px solid #c2c2c2;
+} */
+
+/* .fetch-ids button {
+  padding: 8px;
+  margin-bottom: 10px;
+  margin-left: 2%;
 }
 
-.checkout-register-form .text-inputs{
-    min-width: 220px;
-    max-width: 100%;
-    min-height: 270px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: start;
-    border: 0.5px solid #c2c2c2;
+.checkout-register-form .ID-selects {
+  min-width: 220px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+  border: 0.5px solid #c2c2c2;
 }
 
-.fetch-ids{
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: end;
-    justify-content: start;
-    border: 0.5px solid #c2c2c2;
+.idcardsSelects button {
+  font-weight: 500;
+  background-color: #dedede;
+  color: black;
 }
 
-.fetch-ids button{
-    padding: 8px;
-    margin-bottom: 10px;
-    margin-left: 2%;
-}
+.checkout-register-form .photo-frame {
+  height: 100%;
+  padding-bottom: 20px;
+} */
 
-.checkout-register-form .ID-selects{
-    min-width: 220px;
-    max-width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-evenly;
-    border: 0.5px solid #c2c2c2;
-}
+/* .checkout-register-form .photo {
+  width: 300px;
+  min-width: 300px;
+  height: 180px;
+  min-height: 150px;
+  max-width: 400px; 
+  border: 1px solid #c2c2c2; 
+  border-radius: 5px; 
+ background-color: #ffffff; Black background for the webcam feed 
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+} */
 
-.idcardsSelects button{
-    font-weight: 500;
-    background-color: #dedede;
-    color: black;
-}
-
-.checkout-register-form .photo-frame{
-    height: 100%;
-    padding-bottom: 20px;
-}
-
-.checkout-register-form .photo{
-    width: 300px; /* Adjust width as needed, e.g., 300px or 400px */
-    min-width: 300px;
-    height: 180px; /* Maintain aspect ratio */
-    min-height: 150px;
-    max-width: 400px; /* Optional: constrain maximum width */
-    border: 1px solid #c2c2c2; /* Optional: border for the webcam feed */
-    border-radius: 5px; /* Optional: rounded corners */
-    background-color: #ffffff; /* Black background for the webcam feed */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-}
-
-.checkout-register-form .photo img{
-    width: 100%;
-    height: 180px;
-    border-radius: 5px;
-}
+/* .checkout-register-form .photo img {
+  width: 100%;
+  height: 180px;
+  border-radius: 5px;
+} */

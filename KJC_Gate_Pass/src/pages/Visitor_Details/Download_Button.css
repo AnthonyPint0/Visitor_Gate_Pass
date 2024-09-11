@@ -1,0 +1,68 @@
+.download-button-container {
+  position: relative;
+  margin-left: 15px;
+}
+
+.download-button-container .custom-download-btn,
+.custom-proceed-btn {
+  margin: 4px 15px 10px;
+  padding: 8px;
+  background-color: transparent;
+  color: rgb(0, 0, 0);
+  border: solid 1px rgb(159, 159, 159);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.custom-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 200px;
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 10px;
+  z-index: 1000;
+  border-radius: 5px;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.date-picker-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.download-button-container .custom-proceed-btn {
+  background-color: rgb(255, 255, 255);
+  color: #000000;
+  margin-top: 20px;
+  font-size: 14px;
+  width: 90px;
+  border: 1px solid rgb(159, 159, 159);
+  border-radius: 25px;
+  font-weight: 600;
+  float: right;
+}
+
+.radio-group label {
+  width: 180px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #cecece;
+  border-radius: 4px;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.radio-group label:hover {
+  background-color: #f0f0f0;
+  border-color: #000000; /* Matches the button color */
+  background-color: #0184ab;
+  color: white;
+}

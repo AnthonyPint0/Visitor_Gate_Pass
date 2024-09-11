@@ -7,7 +7,7 @@ function TextImage(){
             <p id="text1">Security Management</p>
             <p id="text2">Rendering our service for the others</p>
         </div>
-        <img src="./src/assets/Image_LoginPage.svg" alt="LogoPIC.png" />
+        {/* <img src="./src/assets/Image_LoginPage.svg" alt="LogoPIC.png" /> */}
     </div>
 );
 }

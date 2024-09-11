@@ -1,0 +1,60 @@
+/* CustomDatePicker.css */
+.custom-date-picker-wrapper .react-datepicker-wrapper,
+.custom-date-picker-wrapper .react-datepicker__input-container {
+  display: block;
+  width: 100%;
+}
+
+.custom-date-picker-wrapper .custom-datepicker-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.custom-date-picker-wrapper .react-datepicker-popper {
+  z-index: 9999;
+}
+
+/* Custom header styles */
+.custom-datepicker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+}
+
+.custom-datepicker-nav-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px 10px;
+}
+
+.custom-datepicker-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Override default react-datepicker styles */
+.custom-date-picker-wrapper .react-datepicker__navigation {
+  display: none;
+}
+
+.custom-date-picker-wrapper .react-datepicker__header {
+  background-color: white;
+  border-bottom: none;
+}
+
+.custom-date-picker-wrapper .react-datepicker__current-month {
+  display: none;
+}
+
+.custom-date-picker-wrapper select {
+  margin: 0 5px;
+  padding: 2px;
+  width: 105px;
+}

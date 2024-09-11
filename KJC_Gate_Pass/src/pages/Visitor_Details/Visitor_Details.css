@@ -1,145 +1,135 @@
-
-/* Full viewport height and width for main content */
 .totalContent {
-    width: 100vw !important;
-    height: 100vh !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #f9f9f9;
+
 }
 
-/* Sidebar styling */
+
 .fakeSideBAr {
-    width: 175px;
+  width: 175px;
 }
 
-/* Main content area flexbox */
-.mainContent {
-    display: flex;
-    height: 100%;
-    width: 100%;
-    overflow: auto;
-    padding: 10px;
+.fakeBody {
+
+  height: calc(100vh - 38px);
+  padding-bottom: 5px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
-/* Form container */
+
+
+
 .register-form2 {
-    display: inline-flex;
-    flex-direction: column;
-    width: 100%;
-    height: fit-content;
-    background-color: white;
-    border: 0.5px solid black;
-    border-radius: 2px;
-    overflow: auto;
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  height: fit-content;
+  background-color: white;
+  border: 0.5px solid black;
+  border-radius: 2px;
+  overflow: auto;
 }
 
-
-.visitor-register-form{
-    display: inline-flex;
-    flex-direction: column;
-    width: 100%;
-    height: fit-content;
-    background-color: white;
-    border: 0.5px solid black;
-    border-radius: 2px;
-    overflow: auto;
-    padding: 12px 2px;
+.visitor-register-form {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  height: fit-content;
+  background-color: white;
+  border: 0.5px solid black;
+  border-radius: 2px;
+  overflow: auto;
+  padding: 12px 2px;
 }
 
 .form-title img {
-    width: 30px;
+  width: 30px;
 }
 
 .form-title h2 {
-    font-family: 'Roboto', 'Poppins';
-    font-size: 19px;
-    font-weight: 500;
-}
-
-/* Icon and line styling */
-.icon-text-visitor {
-    display: flex;
-    flex-direction: row;
+  font-family: "Roboto", "Poppins";
+  font-size: 19px;
+  font-weight: 500;
 }
 
 .lines {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: start;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: start;
 }
 
 .line1 {
-    width: 150px;
-    height: 2px;
-    background-color: black;
-    border-radius: 10px;
+  width: 150px;
+  height: 2px;
+  background-color: black;
+  border-radius: 10px;
 }
 
 .line2 {
-    width: 100px;
-    height: 5px;
-    background-color: #254F8E;
+  width: 100px;
+  height: 5px;
+  background-color: #254f8e;
 }
 
 /* Main form layout */
 .main-form-vd {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .vd_name_sections {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start; /* Align items to the left */
-    width: 100%;
-    font-size: 14px;
-    padding: 10px;
-    flex-direction: row;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  font-size: 14px;
+  padding: 10px;
+  flex-direction: row;
 }
 
-
-
-.Vcontainer{ 
-    height: fit-content;
-    width:100%;
+.Vcontainer {
+  height: fit-content;
+  width: 100%;
 }
 
-
-.table{
-    width:100%;
-   
-}
-.vt_searchcontainer
-{
-    /* background-color:black; */
-    margin-left:2px;
-    padding:7px;
-    border:1px solid grey;
-    width: 240px;
-    border-radius:4px;
-    margin-bottom:-9px;
+.table {
+  width: 100%;
 }
 
-.vt_date_search{
-    background-color:rgb(255, 247, 247);
-    width:100%;
-    display:flex;
+.vt_searchcontainer {
 
+  margin-left: 2px;
+  padding: 7px;
+  border: 1px solid grey;
+  width: 240px;
+  border-radius: 4px;
+  margin-bottom: -9px;
 }
 
+.vt_date_search {
+  width: 100%;
+  display: flex;
+}
 
 .main-form-vd h1 {
-    background-color: none; /* This value is actually not valid; you might want to remove or change it */
-    color: rgb(142, 141, 141);
-    font-family: 'Comic Sans MS', cursive;
-    font-weight: bold;
-    font-size: 50px;
-    font-style: italic;
-    margin-top: 200px;
-    margin-left: 30%;
-    text-align: center;
+  background-color: none;
+  color: rgb(142, 141, 141);
+  font-family: "Comic Sans MS", cursive;
+  font-weight: bold;
+  font-size: 50px;
+  font-style: italic;
+  margin-top: 200px;
+  margin-left: 30%;
+  text-align: center;
 }
-
- 

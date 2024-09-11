@@ -1,280 +1,264 @@
 /* General reset and base styling */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
 }
 
 /* Full viewport height and width for main content */
 .totalContent {
-    width: 100vw !important;
-    height: 100vh !important;
-}
-
-/* Sidebar styling */
-.fakeSideBAr {
-    width: 175px;
+  width: 100vw !important;
+  height: 100vh !important;
 }
 
 /* Main content area flexbox */
 .mainContent {
-    display: flex;
-    height: 100%;
-    width: 100%;
-    overflow: auto;
-    padding: 10px;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  padding: 10px;
 }
 
 /* Form container */
 .register-form {
-    display: inline-flex;
-    flex-direction: column;
-    width: 100%;
-    height: fit-content;
-    background-color: white;
-    border: 0.5px solid black;
-    border-radius: 2px;
-    overflow: auto;
+  display: inline-flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: auto;
 }
 
-/* Title and text styling */
-.register-form h2, p, label, input, img {
-    width: fit-content;
-    height: fit-content;
-    font-family: 'Roboto', 'Poppins';
-    font-weight: 400;
-}
-
-/* Title styling */
-.form-title {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: fit-content;
-    padding: 15px;
-}
-
-.form-title img {
-    width: 30px;
-}
-
-.form-title h2 {
-    font-family: 'Roboto', 'Poppins';
-    font-size: 19px;
-    font-weight: 500;
-}
-
-/* Icon and line styling */
-.icon-text {
-    display: flex;
-    flex-direction: row;
-}
-
-.lines {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: start;
-}
-
-.line1 {
-    width: 150px;
-    height: 2px;
-    background-color: black;
-    border-radius: 10px;
-}
-
-.line2 {
-    width: 100px;
-    height: 5px;
-    background-color: #254F8E;
-}
-
-/* Main form layout */
-.main-form {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Sections for form layout */
-.sections {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    min-width: 310px;
-    border: 0.5px solid #c2c2c2;
-}
-
-.left-section-form {
-    width: auto;
-    height: fit-content;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 310px;
-    border: 0.5px solid #c2c2c2;
-}
-
-.text-inputs {
-    min-width: 220px;
-    max-width: 100%;
-    min-height: 270px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-evenly;
-    border: 0.5px solid #c2c2c2;
-}
-
-.text-boxes {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    padding: 11px;
-}
-
-.text-boxes input, select {
-    margin: 0;
-    width: 200px;
-    height: 32px;
-    font-family: 'Roboto', 'Poppins', Arial;
-    font-size: 13px;
-    background-color: #F2F2F2;
-    border: 0.5px solid #c2c2c2;
-    border-radius: 3px;
-}
-
-.sections label {
-    font-family: 'Roboto', 'Poppins', Arial;
-    font-weight: 500;
-    font-size: 15px;
-}
-
-/* ID selection section */
 .ID-selects {
-    min-width: 220px;
-    max-width: 500px;
-    min-height: 150px;
-    height: auto;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: start;
-    justify-content: start;
+  min-width: 220px;
+  max-width: 500px;
+  min-height: 150px;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: start;
 }
 
 .ID-selects .text-boxes {
-    display: flex;
+  display: flex;
 }
 
 .ID-selects .text-boxes .ID-drops {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-evenly;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
 }
 
-.idcardsSelects{
-    margin: 3px;
+.idcardsSelects {
+  margin: 3px;
 }
+
+/* Title and text styling */
+/* .register-form h2,
+p,
+label,
+input,
+.register-form img {
+  width: fit-content;
+  height: fit-content;
+  font-family: "Roboto", "Poppins";
+  font-weight: 400;
+} */
+
+/* Title styling */
+/* .form-title {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: fit-content;
+  padding: 15px;
+}
+
+.form-title img {
+  width: 30px;
+}
+
+.form-title h2 {
+  font-family: "Roboto", "Poppins";
+  font-size: 19px;
+  font-weight: 500;
+}
+
+/* Icon and line styling */
+/* .icon-text {
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  align-items: center;
+  padding: 3px 3px 1px 5px;
+} */
+
+/* .icon-text img {
+  margin-right: 10px;
+  margin-bottom: 4px;
+} */
+
+/* Main form layout */
+/* .main-form {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+} */
+
+/* Sections for form layout */
+/* .sections {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  min-width: 310px;
+} */
+
+/* .left-section-form {
+  width: auto;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  flex: 2;
+} */
+/*
+.text-inputs {
+  min-width: 220px;
+  max-width: 100%;
+  min-height: 270px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+  border-bottom: 0.5px solid rgba(159, 159, 159, 0.442);
+}
+
+.text-boxes {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 11px;
+}
+
+.text-boxes input,
+select {
+  margin: 0;
+  width: 200px;
+  height: 32px;
+  font-family: "Roboto", "Poppins", Arial;
+  font-size: 13px;
+  background-color: #f2f2f2;
+  border: 0.5px solid #c2c2c2;
+  border-radius: 3px;
+}
+
+.sections label {
+  font-family: "Roboto", "Poppins", Arial;
+  font-weight: 500;
+  font-size: 15px;
+} */
+
+/* ID selection section */
 
 /* Right section for webcam and photo display */
-.right-section-form {
-    min-width: 310px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    border: 0.5px solid #c2c2c2;
+/* .right-section-form {
+  min-width: 310px;
+  width: 100%; */
+/* height: fit-content; */
+/* display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+} */
+
+/* .photo-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100%;
+  width: 90%;
+  height: fit-content;
+} */
+
+/* .live-videos {
+  width: 300px; /* Adjust width as needed, e.g., 300px or 400px */
+/* min-width: 300px; */
+/* height: auto; Maintain aspect ratio */
+/* min-height: 150px; */
+/* max-width: 400px; Optional: constrain maximum width */
+/* border: 1px solid #000; Optional: border for the webcam feed */
+/* border-radius: 5px; Optional: rounded corners */
+/* background-color: #282828; Black background for the webcam feed */
+
+/* 
+.live-videos video {
+  width: 100%;
+  height: auto;
+} */
+/* .buttons- {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+} */
+
+/* .mainContent button {
+  margin: 5px;
+  padding: 10px;
+  font-family: "Inter";
+  font-weight: 400;
+  color: white;
+  background-color: #3873cc;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 3px 3px 5px rgba(98, 98, 98, 0.408);
+} */
+
+/* .resulter {
+  width: 100%;
+  height: 100%;
 }
 
-.photo-frame {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 100%;
-    width: 90%;
-    height: fit-content;
-    background-color: #E0E0E0;
-}
-
-.live-videos {
-    width: 300px; /* Adjust width as needed, e.g., 300px or 400px */
-    min-width: 300px;
-    height: auto; /* Maintain aspect ratio */
-    min-height: 150px;
-    max-width: 400px; /* Optional: constrain maximum width */
-    border: 1px solid #000; /* Optional: border for the webcam feed */
-    border-radius: 5px; /* Optional: rounded corners */
-    background-color: #282828; /* Black background for the webcam feed */
-}
-
-.live-videos video{
-    width: 100%;
-    height: auto;
-}
-.buttons-{
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
-}
-
-.mainContent button{
-    margin: 5px;
-    padding: 10px;
-    font-family: 'Inter';
-    font-weight: 400;
-    color: white;
-    background-color: #3873cc;
-    border: none;
-    border-radius: 5px;
-    box-shadow: 3px 3px 5px rgba(98, 98, 98, 0.408);
-}
-
-.resulter{
-    background-color: #E0E0E0;
-    width: 100%;
-    height: 180px;
-}
-
-.result{
-    background-color: #E0E0E0;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: start;
-    justify-content: center;
-}
+.result {
+  background-color: #ffffff;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: center;
+} */
 
 /* Ensure captured image displays properly */
-canvas{
-    margin-top: 10px;
-    max-width: 100%; /* Fit within its container */
-    border: 1px solid #ccc; /* Optional border */
+/* canvas {
+  margin-top: 10px;
+  max-width: 100%; 
+  border: 1px solid #ccc; 
 }
 
-canvas button{
-    z-index: 1;
+canvas button {
+  z-index: 1;
 }
 
-.form-footer{
-    width: 100%;
-    min-height: 70px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
+.form-footer {
+  width: 100%;
+  height: fit-content;
+  min-height: 70px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  border-top: 1px solid rgb(209, 209, 209);
+} */
 
-.form-footer button{
-    font-weight: 500;
-    width: 80px;
-}
+/* .form-footer button {
+  font-weight: 500;
+  width: 80px;
+} */

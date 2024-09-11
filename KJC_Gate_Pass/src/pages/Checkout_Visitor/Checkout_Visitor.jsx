@@ -1,7 +1,17 @@
 import "./Checkout_Visitor.css";
 import useWindowSize from "../../hooks/useWindowSize.jsx";
-import SideBarNavi from "../../components/SideBarNavi/SideBarNavi.jsx";
-import CheckoutBlack_Icon from "../../assets/Icons/CheckoutBlack_Icon.svg";
+import {
+  StyledFormControl,
+  StyledInputLabel,
+  StyledMenuItem,
+  StyledSelect,
+  StyledTextField,
+} from "../../components/StyledComponents/StyledComponents.js";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import SyncIcon from "@mui/icons-material/Sync";
+import SendIcon from "@mui/icons-material/Send";
 import CustomDropdown from "../../components/CustomDropDown/CustomDropDown.jsx";
 import default_photo from "../../assets/default_photo.svg";
 import { useEffect, useState } from "react";
@@ -10,15 +20,17 @@ import "react-toastify/dist/ReactToastify.css";
 import { API_BASE_URL } from "../../library/helper.js";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import CompleteSidebar from "../../components/SideBarNavi/CompleteSidebar.jsx";
+import Footer from "../../components/Footer/Footer.jsx";
 
 function Checkout_Visitor() {
-  const [selectedValuesArray, setSelectedValuesArray] = useState([]);
   const { width, height } = useWindowSize();
+  const [selectedValuesArray, setSelectedValuesArray] = useState([]); //array for selected ids
   const [initiallyCheckedOut, setInitiallyCheckedOut] = useState([]);
-  const [checkedStates, setCheckedStates] = useState([]);
-  const [selectedValues, setSelectedValues] = useState([]);
-  const [checkedInIds, setCheckedInIds] = useState([]);
-  const [selectedId, setSelectedId] = useState("");
+  const [checkedStates, setCheckedStates] = useState([]); //state for checked states of checkout span buttons
+  const [selectedValues, setSelectedValues] = useState([]); // for selectiong ids to checkout
+  const [checkedInIds, setCheckedInIds] = useState([]); // for dropdown selection
+  const [selectedId, setSelectedId] = useState(""); //for selecting an id from dropdown
   const [visitorData, setVisitorData] = useState(null); // State for visitor data
   const [selectedExit, setSelectedExit] = useState("Gate 1"); // Default value for exit gate
   const API_URL = API_BASE_URL;
@@ -72,10 +84,23 @@ function Checkout_Visitor() {
 
   const fetchCheckedInIds = async (query) => {
     try {
-      const response = await axios.get(`${API_URL}/checked-in-ids`, {
-        params: { query },
-      });
-      // console.log('Fetched IDs:', response.data);
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      const response = await axios.get(
+        `${API_URL}/visitors/get-checked-in-ids`,
+        {
+          params: { query },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       setCheckedInIds(
         response.data.map((id) => ({ label: String(id), value: String(id) }))
       );
@@ -101,12 +126,25 @@ function Checkout_Visitor() {
     if (selectedId == "") {
       notifyErr("No Id Selected");
     } else {
+      setSelectedValues([]);
       try {
-        setSelectedValues([]);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
         const response = await axios.get(
-          `${API_URL}/checkout-visitor-details`,
-          { params: { id: selectedId } }
+          `${API_URL}/visitors/retrieve-visitor-details`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: { id: selectedId },
+          }
         );
+
         if (response.status === 200) {
           const data = response.data;
           setVisitorData(data); // Set visitor data including photo
@@ -121,7 +159,7 @@ function Checkout_Visitor() {
           console.error("Failed to fetch data:", response.statusText);
         }
       } catch (error) {
-        notifyErr("The Id Is Not Checked-In ");
+        notifyErr("The Id Is Not Checked-In");
         console.error("Error occurred while fetching data:", error);
       }
     }
@@ -199,14 +237,32 @@ function Checkout_Visitor() {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/checkout-visitor`, {
-        selectedValues,
-        selectedExit,
-      });
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      const response = await axios.post(
+        `${API_URL}/visitor-groups/process-visitor-checkout`,
+        {
+          selectedValues,
+          selectedExit,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.status === 200) {
         notifySuccess("Checkout completed successfully.");
         handleClear();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         notifyErr("Failed to complete checkout.");
       }
@@ -223,223 +279,363 @@ function Checkout_Visitor() {
   return (
     <div className="fakeBody">
       <div className="totalContent">
-        <SideBarNavi activeLink="checkoutLink" />
         <div className="content">
-          <div className="fakeSideBAr" />
+          <CompleteSidebar isActive="checkoutVisitor" />
           <ToastContainer />
           <main className="mainContent">
             <div className="checkout-register-form">
-              <div className="form-title">
-                <div className="icon-text">
-                  <img src={CheckoutBlack_Icon} alt="registerFormIcon.svg" />
-                  <h2>Visitor Check-out</h2>
-                </div>
-                <div className="lines">
-                  <div className="line1" />
-                  <div className="line2" />
-                </div>
-              </div>
+              <Box
+                sx={{
+                  p: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  flexGrow: 1,
+                  overflow: "auto",
+                }}
+              >
+                <h2
+                  style={{
+                    width: "100%",
+                    height: "fit-content",
+                    fontFamily: "Roboto, Poppins",
+                    fontSize: "16px",
+                    fontWeight: 500,
+                    borderBottom: "1px solid rgb(183, 183, 183)",
+                  }}
+                >
+                  Visitor Check-out
+                </h2>
 
-              <form className="main-form">
-                <div className="sections">
-                  <div className="left-section-form">
-                    <div className="fetch-ids">
-                      <div className="text-boxes">
-                        <label>Visitor ID Card:</label>
-                        <CustomDropdown
-                          id="checkoutId"
-                          name="checkoutId"
-                          types="text"
-                          widths={100}
-                          option_width={50}
-                          search_box_width={135}
-                          value={selectedId}
-                          onChange={handleIdCardChange}
-                          options={checkedInIds}
-                          placeholder="Select ID"
+                <Box
+                  sx={{
+                    m: 1,
+                    mb: 2,
+                    maxWidth: "50",
+                    display: "flex",
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    alignItems: "end",
+                    justifyContent: "start",
+                    gap: 1,
+                  }}
+                >
+                  <StyledFormControl sx={{ width: "260px" }}>
+                    <StyledInputLabel htmlFor="checkoutId">
+                      Visitor ID Card
+                    </StyledInputLabel>
+                    <CustomDropdown
+                      id="checkoutId"
+                      name="checkoutId"
+                      types="text"
+                      widths={100}
+                      option_width={50}
+                      search_box_width={135}
+                      value={selectedId}
+                      onChange={handleIdCardChange}
+                      options={checkedInIds}
+                      placeholder="Select ID"
+                    />
+                  </StyledFormControl>
+                  <Button
+                    variant="outlined"
+                    startIcon={<SyncIcon />}
+                    sx={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      borderRadius: 2,
+                      color: "white",
+                      backgroundColor: "#239700",
+                      textTransform: "none",
+                    }}
+                    onClick={handleFetchData}
+                  >
+                    Fetch Details
+                  </Button>
+                </Box>
+                <form style={{ maxWidth: "1200px" }}>
+                  <Box
+                    sx={{
+                      "& > :not(style)": {
+                        m: 1,
+                        width: { xs: "85%", sm: "260px" },
+                      },
+                      height: { xs: "auto", sm: "200px", md: "fit-content" },
+                    }}
+                  >
+                    <StyledFormControl>
+                      <StyledInputLabel htmlFor="name">
+                        Full Name
+                      </StyledInputLabel>
+                      <StyledTextField
+                        type="text"
+                        variant="outlined"
+                        id="name"
+                        name="name"
+                        value={visitorData?.name || ""}
+                        readOnly
+                      />
+                    </StyledFormControl>
+                    <StyledFormControl>
+                      <StyledInputLabel htmlFor="phoneno">
+                        Phone Number
+                      </StyledInputLabel>
+                      <StyledTextField
+                        type="tel"
+                        variant="outlined"
+                        id="phoneno"
+                        name="phoneno"
+                        value={visitorData?.phone_number || ""}
+                        readOnly
+                      />
+                    </StyledFormControl>
+                    <StyledFormControl>
+                      <StyledInputLabel htmlFor="purpose">
+                        Purpose of Visit
+                      </StyledInputLabel>
+                      <StyledTextField
+                        type="text"
+                        variant="outlined"
+                        id="purpose"
+                        name="purpose"
+                        value={visitorData?.purpose_of_visit || ""}
+                        readOnly
+                      />
+                    </StyledFormControl>
+                    <StyledFormControl>
+                      <StyledInputLabel htmlFor="entry">
+                        Entry Gate
+                      </StyledInputLabel>
+                      <StyledTextField
+                        type="text"
+                        variant="outlined"
+                        id="entry"
+                        name="entry"
+                        value={visitorData?.entry_gate || ""}
+                        readOnly
+                      />
+                    </StyledFormControl>
+                    {visitorData?.vehicle_number && (
+                      <StyledFormControl>
+                        <StyledInputLabel htmlFor="vehicle_no">
+                          Vehicle Number
+                        </StyledInputLabel>
+
+                        <StyledTextField
+                          type="text"
+                          variant="outlined"
+                          id="vehicle_no"
+                          name="vehicle_no"
+                          value={visitorData.vehicle_number}
+                          readOnly
                         />
-                      </div>
-                      <button
-                        onClick={handleFetchData}
-                        style={{ backgroundColor: "#16a34a" }}
+                      </StyledFormControl>
+                    )}
+
+                    <StyledFormControl>
+                      <StyledInputLabel htmlFor="groupSize">
+                        Group Size
+                      </StyledInputLabel>
+                      <StyledTextField
+                        type="text"
+                        variant="outlined"
+                        id="groupSize"
+                        name="groupSize"
+                        value={visitorData?.group_size || ""}
+                        readOnly
+                      />
+                    </StyledFormControl>
+                    <StyledFormControl>
+                      <StyledInputLabel htmlFor="checkInTime">
+                        Check In Time
+                      </StyledInputLabel>
+                      <StyledTextField
+                        type="text"
+                        variant="outlined"
+                        id="checkInTime"
+                        name="checkInTime"
+                        value={
+                          visitorData
+                            ? formatDateTime(visitorData.check_in_time)
+                            : ""
+                        }
+                        readOnly
+                      />
+                    </StyledFormControl>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
+                      justifyContent: "start",
+                      "& > :not(style)": {
+                        m: 1,
+                        width: { xs: "85%", sm: "260px" },
+                      },
+                      height: { xs: "auto", sm: "200px", md: "fit-content" },
+                    }}
+                  >
+                    <StyledFormControl>
+                      <StyledInputLabel>Photo</StyledInputLabel>
+                      <Box
+                        className="photo-frame"
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          minWidth: "fit-content",
+                          width: "100%",
+                          height: "fit-content",
+                          maxHeight: "300px",
+                          border: "1px solid #4250661A",
+                          backgroundColor: "#fff",
+
+                          borderRadius: "5px",
+                        }}
                       >
-                        Fetch Data
-                      </button>
-                    </div>
-                    <div className="text-inputs">
-                      <div className="text-boxes">
-                        <label htmlFor="name">Name:</label>
-                        <input
-                          type="text"
-                          name="name"
-                          id="name"
-                          value={visitorData?.name || ""}
-                          readOnly
-                        />
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="phoneno">Phone No:</label>
-                        <input
-                          type="tel"
-                          name="phoneno"
-                          id="phoneno"
-                          value={visitorData?.phone_number || ""}
-                          readOnly
-                        />
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="purpose">Purpose of Visit:</label>
-                        <input
-                          type="text"
-                          name="purpose"
-                          id="purpose"
-                          value={visitorData?.purpose_of_visit || ""}
-                          readOnly
-                        />
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="groupSize">Group Size:</label>
-                        <input
-                          type="text"
-                          name="groupSize"
-                          id="groupSize"
-                          value={visitorData?.group_size || ""}
-                          readOnly
-                        />
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="checkInTime">Check-in Time:</label>
-                        <input
-                          type="text"
-                          name="checkInTime"
-                          id="checkInTime"
-                          value={
-                            visitorData
-                              ? formatDateTime(visitorData.check_in_time)
-                              : ""
-                          }
-                          readOnly
-                        />
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="entry">Entry Gate:</label>
-                        <input
-                          type="text"
-                          name="entry"
-                          id="entry"
-                          value={visitorData?.entry_gate || ""}
-                          readOnly
-                        />
-                      </div>
-                    </div>
-                    <div className="ID-selects">
-                      <div className="text-boxes">
-                        <label>ID Selections</label>
-                        <div
-                          className="ID-drops"
-                          style={{
-                            display: "flex",
-                            gap: "10px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          {visitorData?.member_details.map((member, index) => (
-                            <span
-                              className="idcardsSelects"
-                              key={index}
-                              id={`idSelect${index + 1}`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={checkedStates[index]}
-                                onChange={() =>
-                                  handleToggle(index, member.card_id)
-                                }
-                                id={`checkbox-${index}`}
-                                style={{ display: "none" }}
-                              />
-                              <label
-                                htmlFor={`checkbox-${index}`}
-                                style={{
-                                  backgroundColor: checkedStates[index]
-                                    ? "red"
-                                    : "#02e802",
-                                  boxShadow: checkedStates[index]
-                                    ? "0px 4px 10px rgba(255, 0, 0, 0.5)"
-                                    : "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                                  color: checkedStates[index]
-                                    ? "white"
-                                    : "black",
-                                  border: "none",
-                                  borderRadius: "5px",
-                                  padding: "10px 15px",
-                                  cursor: initiallyCheckedOut[index]
-                                    ? "not-allowed"
-                                    : "pointer",
-                                  transition: "transform 0.2s ease",
-                                  transform: checkedStates[index]
-                                    ? "scale(1.05)"
-                                    : "scale(1)",
-                                  display: "inline-block",
-                                }}
-                              >
-                                {member.card_id}
-                              </label>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="text-boxes">
-                        <label htmlFor="exit">Exit Gate:</label>
-                        <select
-                          name="exit"
-                          id="exit"
-                          value={selectedExit}
-                          onChange={(e) => setSelectedExit(e.target.value)}
-                        >
-                          <option value="Gate 1">Gate 1</option>
-                          <option value="Gate 2">Gate 2</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="right-section-form">
-                    <div className="photo-frame">
-                      <label>Photo</label>
-                      <div className="photo">
                         <img
                           src={visitorData?.photos || default_photo}
                           alt="Visitor"
                         />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="form-footer">
-                  <button
-                    onClick={handleCheckout}
-                    style={{ backgroundColor: "#16a34a", width: 90 }}
-                  >
-                    Check-Out
-                  </button>
-                  <button type="reset" onClick={handleClear}>
-                    Clear
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleClear();
-                      navigate("/dashboard");
-                    }}
-                    style={{ backgroundColor: "#dc2626" }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                      </Box>
+                    </StyledFormControl>
+                    <StyledFormControl
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center", // Centers horizontally
+                        margin: 2, // Centers the element horizontally within the parent container
+                        width: "fit-content",
+                      }}
+                    >
+                      <StyledInputLabel>Select IDs</StyledInputLabel>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: "10px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {visitorData?.member_details.map((member, index) => (
+                          <Button
+                            key={index}
+                            variant="contained"
+                            sx={{
+                              backgroundColor: checkedStates[index]
+                                ? "red"
+                                : "#02e802",
+                              boxShadow: checkedStates[index]
+                                ? "0px 4px 10px rgba(255, 0, 0, 0.5)"
+                                : "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                              color: checkedStates[index] ? "white" : "black",
+                              border: "none",
+                              borderRadius: "5px",
+                              padding: "5px 5px",
+                              cursor: initiallyCheckedOut[index]
+                                ? "not-allowed"
+                                : "pointer",
+                              transition: "transform 0.2s ease",
+                              transform: checkedStates[index]
+                                ? "scale(1.05)"
+                                : "scale(1)",
+                              "&:hover": {
+                                backgroundColor: checkedStates[index]
+                                  ? "#d00000"
+                                  : "#00cc00",
+                              },
+                            }}
+                            onClick={() =>
+                              !initiallyCheckedOut[index] &&
+                              handleToggle(index, member.card_id)
+                            }
+                            disabled={initiallyCheckedOut[index]}
+                          >
+                            {member.card_id}
+                          </Button>
+                        ))}
+                      </Box>
+                    </StyledFormControl>
+                    <StyledFormControl
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center", // Centers horizontally
+                        margin: "0 auto", // Centers the element horizontally within the parent container
+                        width: "fit-content",
+                      }}
+                    >
+                      <StyledInputLabel id="exit">Exit Gate</StyledInputLabel>
+                      <StyledSelect
+                        name="exit"
+                        id="exit"
+                        value={selectedExit}
+                        onChange={(e) => setSelectedExit(e.target.value)}
+                      >
+                        <StyledMenuItem value="Gate 1">Gate 1</StyledMenuItem>
+                        <StyledMenuItem value="Gate 2">Gate 2</StyledMenuItem>
+                      </StyledSelect>
+                    </StyledFormControl>
+                  </Box>
+                </form>
+                <Box
+                  sx={{
+                    mt: "auto",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    borderTop: "1px solid rgb(183, 183, 183)",
+                    pt: 2,
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <Stack direction="row" spacing={2}>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      sx={{
+                        color: "white",
+                        textTransform: "none",
+                        borderRadius: 1,
+                        fontSize: { xs: "10px", sm: "14px" },
+                      }}
+                      onClick={() => {
+                        handleClear();
+                        navigate("/dashboard");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      sx={{
+                        color: "white",
+                        textTransform: "none",
+                        borderRadius: 1,
+                        fontSize: { xs: "10px", sm: "14px" },
+                      }}
+                      onClick={handleClear}
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="outlined"
+                      endIcon={<SendIcon />}
+                      sx={{
+                        color: "white",
+                        backgroundColor: "#239700",
+                        textTransform: "none",
+                        borderRadius: 1,
+                        fontSize: { xs: "10px", sm: "14px" },
+                      }}
+                      onClick={handleCheckout}
+                    >
+                      Check Out
+                    </Button>
+                  </Stack>
+                </Box>
+              </Box>
             </div>
           </main>
         </div>
+        <Footer />
       </div>
     </div>
   );

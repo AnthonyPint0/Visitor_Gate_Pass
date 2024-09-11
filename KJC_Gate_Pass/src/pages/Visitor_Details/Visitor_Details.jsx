@@ -1,45 +1,52 @@
 import React, { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import SideBarNavi from "../../components/SideBarNavi/SideBarNavi.jsx";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner.jsx";
-import TotalVisitoirBlack_Icon from "../../assets/Icons/TotalVisitoirBlack_Icon.svg";
-import "./Visitor_Details.css";
+import CompleteSidebar from "../../components/SideBarNavi/CompleteSidebar.jsx";
+import Footer from "../../components/Footer/Footer.jsx";
 import VisitorTable2 from "./VisitorTable2.jsx";
+import Download_Button from "./Download_Button.jsx";
 import axios from "axios";
 import { API_BASE_URL } from "../../library/helper.js";
+import useWindowSize from "../../hooks/useWindowSize";
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  InputAdornment,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
-const API_URL = API_BASE_URL + "/visitors";
+const API_URL = API_BASE_URL + "/visitors/visitor-sessions";
 
 const Visitor_Details = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { width, height } = useWindowSize();
   const [filterText, setFilterText] = useState("");
   const [filteredVisitors, setFilteredVisitors] = useState([]);
   const [visitorData, setVisitorData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const handleClickOutside = (event) => {
-    if (event.target.closest(".dropdown2") === null) {
-      setIsOpen(false);
-    }
-  };
-
   useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+    document.title = `Visitor Details: ${width} x ${height}`;
+  }, [width, height]);
 
   useEffect(() => {
     const fetchVisitorData = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
       try {
-        const response = await axios.get(API_URL);
-        setVisitorData(response.data); // Store data from API
+        const response = await axios.get(API_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setVisitorData(response.data);
         setLoading(false);
-        console.log("Fetched visitor data:", response.data); // Log data
       } catch (error) {
         console.error("Error fetching visitor data:", error);
         setLoading(false);
@@ -50,22 +57,12 @@ const Visitor_Details = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Filter text changed:", filterText); // Log filter text
-    console.log("Visitor data before filtering:", visitorData); // Log visitor data before filtering
-
-    try {
-      const filtered = visitorData.filter(
-        (visitor) =>
-          visitor.name?.toLowerCase().includes(filterText.toLowerCase()) ||
-          visitor.phone_number?.includes(filterText) // Use correct key for phone number
-      );
-
-      setFilteredVisitors(filtered);
-      console.log("Filtered visitors:", filtered); // Log filtered visitors
-    } catch (error) {
-      console.error("Error during filtering:", error);
-      setFilteredVisitors([]); // Clear the list on error
-    }
+    const filtered = visitorData.filter(
+      (visitor) =>
+        visitor.name?.toLowerCase().includes(filterText.toLowerCase()) ||
+        visitor.phone_number?.includes(filterText)
+    );
+    setFilteredVisitors(filtered);
   }, [filterText, visitorData]);
 
   const handleFilterChange = (event) => {
@@ -73,51 +70,94 @@ const Visitor_Details = () => {
   };
 
   return (
-    <div className="totalContent">
-      <SideBarNavi activeLink="VisiorDetailsLink" />
-      <div className="content">
-        <div className="fakeSideBAr" />
-        <main className="mainContent">
-          <div className="visitor-register-form">
-            <div className="form-title">
-              <div className="icon-text-visitor">
-                <img
-                  src={TotalVisitoirBlack_Icon}
-                  alt="TotalVisitoirBlack_Icon"
-                />
-                <h2 className="visitorname2">Visitor Details</h2>
-              </div>
-              <div className="lines">
-                <div className="line1" />
-                <div className="line2" />
-              </div>
-            </div>
+    <div
+      className="fakeBody"
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+    >
+      <div className="totalContent" style={{ flexGrow: 1, display: "flex" }}>
+        <CompleteSidebar isActive="visitorDetails" />
+        <main
+          className="mainContent"
+          style={{ flexGrow: 1, paddingBottom: "90px" }} // Increased padding to make room for footer
+        >
+          <Container
+            maxWidth="lg"
+            sx={{
+              backgroundColor: "transparent",
+              padding: { xs: 2, sm: 3, md: 4 },
+              minHeight: "100vh",
+              paddingBottom: "80px", // Ensure there is enough space at the bottom for the footer
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{
+                marginBottom: 2,
+                fontSize: {
+                  xs: "1.5rem", // Smaller font size on extra-small screens
+                  sm: "2rem", // Medium font size on small screens
+                  md: "2.125rem", // Default h4 size on medium and larger screens
+                },
+              }}
+            >
+              Visitor Details
+            </Typography>
 
-            <form className="main-form-vd">
-              <div className="Vcontainer">
-                <div className="visitor-details-container">
-                  <div className="vt_date_search">
-                    <input
-                      className="vt_searchcontainer"
-                      type="text"
-                      placeholder="Filter by name or phone number"
-                      value={filterText}
-                      onChange={handleFilterChange}
-                    />
-                  </div>
-                  {loading ? (
-                    <LoadingSpinner />
-                  ) : filteredVisitors.length === 0 ? (
-                    <h1>No Vistor Found!</h1>
-                  ) : (
-                    <VisitorTable2 visitors={filteredVisitors} />
-                  )}
-                </div>
-              </div>
-            </form>
-          </div>
+            <Box
+              sx={{
+                display: "flex",
+
+                justifyContent: "flex-end", // This will only apply when display is flex
+                alignItems: "center", // This will only apply when display is flex
+                marginBottom: 3,
+              }}
+            >
+              <TextField
+                variant="outlined"
+                placeholder="Search"
+                value={filterText}
+                onChange={handleFilterChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    borderRadius: "20px",
+                    backgroundColor: "#fff",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                  },
+                }}
+                sx={{
+                  width: {
+                    xs: "80%",
+                    sm: "80%",
+                    md: "60%",
+                  },
+                  marginRight: 2,
+                  padding: {
+                    xs: "6px 8px", // Smaller padding for small screens
+                    sm: "8px 12px", // Normal padding for larger screens
+                  },
+                }}
+              />
+              <Download_Button />
+            </Box>
+
+            <Box sx={{ pb: "40px" }}>
+              {loading ? (
+                <LoadingSpinner />
+              ) : filteredVisitors.length === 0 ? (
+                <Typography variant="h6">No Visitor Found!</Typography>
+              ) : (
+                <VisitorTable2 visitors={filteredVisitors} />
+              )}
+            </Box>
+          </Container>
         </main>
       </div>
+      <Footer style={{ position: "fixed", bottom: 0, width: "100%" }} />
     </div>
   );
 };

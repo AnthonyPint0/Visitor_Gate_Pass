@@ -1,0 +1,29 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
+}
+
+/* Full viewport height and width for main content */
+.totalContent {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+/* Main content area flexbox */
+.mainContent {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: auto;
+  padding: 10px;
+}
+
+.checkin-guest-security {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
