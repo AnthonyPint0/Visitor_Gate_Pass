@@ -138,16 +138,24 @@ const Register_Guest = ({ handleClose, userINFO }) => {
         phone_number: payload.phone_number,
       };
 
-      const response = await axios.post(`${API_URL}/guest/send-invitation`, {
-        name: formData.name,
-        email: formData.email,
-        subject: formData.emailSubject,
-        mobile: formData.mobileNo,
-        event: formData.event,
-        invitedAs: formData.invitedAs,
-        eventDateTime: formData.date.toISOString(), // Ensure the date is in ISO format
-        userINFO: userINFO,
-      });
+      const response = await axios.post(
+        `${API_URL}/guest/send-invitation`,
+        {
+          name: formData.name,
+          email: formData.email,
+          subject: formData.emailSubject,
+          mobile: formData.mobileNo,
+          event: formData.event,
+          invitedAs: formData.invitedAs,
+          eventDateTime: formData.date.toISOString(), // Ensure the date is in ISO format
+          userINFO: userINFO,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token in headers
+          },
+        }
+      );
 
       if (response.data.message === "Invitation sent and history updated.") {
         notifySuccess("Guest pre-approval submitted successfully!");

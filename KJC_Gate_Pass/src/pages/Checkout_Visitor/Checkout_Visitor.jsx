@@ -84,13 +84,23 @@ function Checkout_Visitor() {
 
   const fetchCheckedInIds = async (query) => {
     try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
       const response = await axios.get(
         `${API_URL}/visitors/get-checked-in-ids`,
         {
           params: { query },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
-      // console.log('Fetched IDs:', response.data);
+
       setCheckedInIds(
         response.data.map((id) => ({ label: String(id), value: String(id) }))
       );
@@ -116,12 +126,25 @@ function Checkout_Visitor() {
     if (selectedId == "") {
       notifyErr("No Id Selected");
     } else {
+      setSelectedValues([]);
       try {
-        setSelectedValues([]);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
         const response = await axios.get(
           `${API_URL}/visitors/retrieve-visitor-details`,
-          { params: { id: selectedId } }
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: { id: selectedId },
+          }
         );
+
         if (response.status === 200) {
           const data = response.data;
           setVisitorData(data); // Set visitor data including photo
@@ -136,7 +159,7 @@ function Checkout_Visitor() {
           console.error("Failed to fetch data:", response.statusText);
         }
       } catch (error) {
-        notifyErr("The Id Is Not Checked-In ");
+        notifyErr("The Id Is Not Checked-In");
         console.error("Error occurred while fetching data:", error);
       }
     }
@@ -214,17 +237,32 @@ function Checkout_Visitor() {
     }
 
     try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
       const response = await axios.post(
         `${API_URL}/visitor-groups/process-visitor-checkout`,
         {
           selectedValues,
           selectedExit,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response.status === 200) {
         notifySuccess("Checkout completed successfully.");
         handleClear();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         notifyErr("Failed to complete checkout.");
       }
@@ -304,14 +342,10 @@ function Checkout_Visitor() {
                     sx={{
                       fontSize: "11px",
                       fontWeight: 600,
-                      color: "white",
-                      backgroundColor: "#239700",
-                      textTransform: "none",
                       borderRadius: 2,
                       color: "white",
                       backgroundColor: "#239700",
                       textTransform: "none",
-                      borderRadius: 1,
                     }}
                     onClick={handleFetchData}
                   >

@@ -22,14 +22,27 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchVisitorData = async () => {
+      setLoading(true);
       try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
         const response = await axios.get(
-          `${API_URL}/visitors/visitor-sessions`
+          `${API_URL}/visitors/visitor-sessions-today`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         setVisitorData(response.data);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching visitor data:", error);
+      } finally {
         setLoading(false);
       }
     };

@@ -1,19 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const {
-  getGuestDetails,
+  authenticateToken,
+  authorizeRole,
+} = require("../middleware/authMiddleware");
+const {
+  getGuestDetailsToday,
   updateGuestDetails,
 } = require("../controllers/securityController");
-const { validateUpdateGuestDetails } = require("../utils/validator");
-//route to get guest details
-router.get("/guest-details/:passId", getGuestDetails);
-// localhost:3000/api/security/guest   // nhi security wali dono hi nhi
 
-//route to update guest details
+//route to get guest details
+router.get(
+  "/guest-details-today",
+  authenticateToken,
+  authorizeRole(["admin", "security"]),
+  getGuestDetailsToday
+);
+
 router.put(
-  "/guest-approveEntry/:passId",
-  validateUpdateGuestDetails,
+  "/checkin-guest/:passId",
+  authenticateToken,
+  authorizeRole(["admin", "security"]),
   updateGuestDetails
 );
-// localhost:3000/api/security/guest
+
 module.exports = router;

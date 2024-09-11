@@ -117,7 +117,7 @@ export function SidebarItem({ icon, text, active, alert, naviLink }) {
           className={`
         absolute left-full rounded-md px-2 py-1 ml-6 w-fit
         bg-indigo-100 text-indigo-800 text-sm
-        invisible opacity-20 -translate-x-3 transition-all
+        invisible opacity-20 -translate-x-3 transition-all z-50
         group-hover:visible group-hover:opacity-100 group-hover:translate-x-0
         `}
         >

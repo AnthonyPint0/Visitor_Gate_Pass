@@ -162,12 +162,23 @@ function Register_Visitor() {
 
   const fetchAvailableCards = async (query) => {
     try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return [];
+      }
+
       const response = await axios.get(
         `${API_URL}/visitor-groups/search-available-cards`,
         {
           params: { query },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
       // console.log(response.data);
       return response.data.map((item) => String(item));
     } catch (error) {
@@ -216,16 +227,24 @@ function Register_Visitor() {
 
     if (phonenum.length === 10) {
       try {
-        // Correctly pass phone_number as query parameter
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
         const response = await axios.get(
           `${API_URL}/visitors/lookup-by-phone`,
           {
             params: { phone_number: phonenum },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
         if (response.data === "") {
-          // console.log('Visitor does not exist');
           setName(""); // Clear the name if visitor does not exist
           setVisitorExists(false);
         } else {
@@ -259,12 +278,23 @@ function Register_Visitor() {
     }
 
     try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
       const response = await axios.get(
         `${API_URL}/visitor-groups/search-purpose`,
         {
           params: { query: inputValue.value },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
       const newOptions = response.data.map((item) => ({
         value: String(item),
         label: String(item),
@@ -389,21 +419,33 @@ function Register_Visitor() {
         return false;
       }
       try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          return false;
+        }
+
         const response = await axios.get(
           `${API_URL}/visitor-groups/verify-id-availability`,
           {
             params: { ID_Array: idCards },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
+
         if (!response.data.checking) {
           notifyErr(response.data.msg);
           return false;
         }
       } catch (error) {
-        console.error("Error checking ID availability: ", error);
+        console.error("Error checking ID availability:", error);
         notifyErr("Error checking ID availability");
         return false;
       }
+
       notifySuccess("All ID slots are filled");
       return true;
     }
@@ -412,12 +454,23 @@ function Register_Visitor() {
   const checkVisitorAccessibility = async () => {
     if (visitorExists) {
       try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          return false;
+        }
+
         const response = await axios.get(
           `${API_URL}/visitor-groups/verify-visitor-accessibility`,
           {
             params: { phone_number: phoneNumber },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
+
         if (response.data.checking) {
           notifySuccess("Visitor is accessible");
           return true;
@@ -426,7 +479,7 @@ function Register_Visitor() {
           return false;
         }
       } catch (error) {
-        console.error("Error checking visitor accessibility: ", error);
+        console.error("Error checking visitor accessibility:", error);
         notifyErr("Error checking visitor accessibility");
         return false;
       }
@@ -505,9 +558,24 @@ function Register_Visitor() {
     // console.log(finalData);
 
     try {
-      const response = await axios.post(`${API_URL}/visitors/checkin-visitor`, {
-        params: { VisitorSessionInfo: finalData },
-      });
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return false;
+      }
+
+      console.log("Hello");
+      const response = await axios.post(
+        `${API_URL}/visitors/checkin-visitor`,
+        { VisitorSessionInfo: finalData },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (response.data.checking) {
         notifySuccess(response.data.msg);
         handleClear();
@@ -518,8 +586,8 @@ function Register_Visitor() {
         notifyErr(response.data.msg);
       }
     } catch (error) {
-      console.error("Error Register/Checkin Visitor: ", error);
-      notifyErr("Error Register/Checkin Visitor: ", error);
+      console.error("Error Register/Checkin Visitor:", error);
+      notifyErr("Error Register/Checkin Visitor");
       return false;
     }
   };

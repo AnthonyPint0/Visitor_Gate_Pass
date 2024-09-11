@@ -32,8 +32,19 @@ const Visitor_Details = () => {
 
   useEffect(() => {
     const fetchVisitorData = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
       try {
-        const response = await axios.get(API_URL);
+        const response = await axios.get(API_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setVisitorData(response.data);
         setLoading(false);
       } catch (error) {
@@ -41,6 +52,7 @@ const Visitor_Details = () => {
         setLoading(false);
       }
     };
+
     fetchVisitorData();
   }, []);
 
@@ -66,7 +78,7 @@ const Visitor_Details = () => {
         <CompleteSidebar isActive="visitorDetails" />
         <main
           className="mainContent"
-          style={{ flexGrow: 1, paddingBottom: "80px" }} // Increased padding to make room for footer
+          style={{ flexGrow: 1, paddingBottom: "90px" }} // Increased padding to make room for footer
         >
           <Container
             maxWidth="lg"
@@ -133,7 +145,7 @@ const Visitor_Details = () => {
               <Download_Button />
             </Box>
 
-            <Box>
+            <Box sx={{ pb: "40px" }}>
               {loading ? (
                 <LoadingSpinner />
               ) : filteredVisitors.length === 0 ? (

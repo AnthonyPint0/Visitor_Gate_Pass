@@ -25,7 +25,19 @@ const GuestDataGrid = ({ userINFO }) => {
   useEffect(() => {
     const fetchGuestHistory = async () => {
       try {
-        const response = await axios.get(`${API_URL}/guest/guest-history`);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/guest/guest-history`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         const guests = Array.isArray(response.data)
           ? response.data
           : [response.data];
@@ -128,12 +140,28 @@ const GuestDataGrid = ({ userINFO }) => {
     }
 
     try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
       console.log(userINFO);
+
       // Send the update request to your API using MongoDB _id
-      await axios.put(`${API_URL}/guest/update/${id}`, {
-        rowToUpdate,
-        userInfo: userINFO, // Assuming userINFO is available in your scope
-      });
+      await axios.put(
+        `${API_URL}/guest/update/${id}`,
+        {
+          rowToUpdate,
+          userInfo: userINFO, // Assuming userINFO is available in your scope
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       notifySuccess("Update complete; email successfully resent!");
     } catch (error) {
@@ -198,15 +226,21 @@ const GuestDataGrid = ({ userINFO }) => {
 
         const response = await axios.post(
           `${API_URL}/guest/resend-invitation/${row.passId}`,
-          { userInfo: user }
+          { userInfo: user },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include token in headers
+            },
+          }
         );
+
         notifySuccess(response.data.message); // Notify user of success
         setTimeout(() => {
           window.location.reload();
         }, 3000);
       } catch (error) {
         console.error("Error resending email:", error);
-        notifySuccess("Failed to resend email. Please try again later."); // Notify user of failure
+        notifyErr("Failed to resend email. Please try again later."); // Notify user of failure
       }
     }
   };

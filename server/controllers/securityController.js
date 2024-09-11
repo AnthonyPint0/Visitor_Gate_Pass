@@ -1,21 +1,37 @@
 const GuestModel = require("../models/guest");
 const { validationResult } = require("express-validator");
 // Controller to get guest details
-const getGuestDetails = async (req, res) => {
-  const { passId } = req.params;
-
+const getGuestDetailsToday = async (req, res) => {
   try {
-    const guest = await GuestModel.findOne({ passId });
-    if (!guest) {
-      return res.status(404).json({ message: "Guest not found" });
+    // Get today's date in UTC
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0); // Set to beginning of the UTC day
+
+    // Get tomorrow's date in UTC
+    const tomorrow = new Date(today);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+
+    // Find guests for today who haven't checked in
+    const guests = await GuestModel.find({
+      eventDateTime: {
+        $gte: today.toISOString(),
+        $lt: tomorrow.toISOString(),
+      },
+      checkedInTime: null, // Only fetch guests who haven't checked in yet
+    }).select("name passId email mobile event invitedAs eventDateTime");
+
+    if (guests.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No unchecked-in guests found for today" });
     }
-    res.status(200).json({
-      message: "Guest details fetched successfully",
-      data: guest,
-    });
+
+    res.status(200).json(guests);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    console.error("Error in getGuestDetailsToday:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -28,13 +44,12 @@ const updateGuestDetails = async (req, res) => {
   }
 
   const { passId } = req.params;
-  const { noOfGuest } = req.body;
 
   try {
     // Update guest details
     const guest = await GuestModel.findOneAndUpdate(
       { passId },
-      { noOfGuest, checkedInTime: new Date(), isVisited: true },
+      { checkedInTime: new Date(), isVisited: true },
       { new: true }
     );
 
@@ -53,6 +68,6 @@ const updateGuestDetails = async (req, res) => {
 };
 
 module.exports = {
-  getGuestDetails,
+  getGuestDetailsToday,
   updateGuestDetails,
 };

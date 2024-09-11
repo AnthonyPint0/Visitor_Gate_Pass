@@ -7,7 +7,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
   Box,
   Collapse,
   Avatar,
@@ -16,6 +15,7 @@ import {
   Grid,
   TextField,
   IconButton,
+  TableSortLabel,
 } from "@mui/material";
 import { ExpandMore, ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -31,24 +31,16 @@ const VisitorTable2 = ({ visitors }) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("name");
 
-  const toggleRow = (index) => {
-    setExpandedRows((prev) =>
-      prev.includes(index)
-        ? prev.filter((id) => id !== index)
-        : [...prev, index]
-    );
+  const handleRequestSort = (property) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
+  // Define filteredVisitors before using it
   const filteredVisitors = useMemo(() => {
     return visitors.filter((visitor) => {
       const checkInTime = new Date(visitor.check_in_time).getTime();
@@ -68,62 +60,64 @@ const VisitorTable2 = ({ visitors }) => {
     });
   }, [visitors, fromDate, toDate]);
 
+  const sortedVisitors = useMemo(() => {
+    return filteredVisitors.slice().sort((a, b) => {
+      if (orderBy === "check_in_time" || orderBy === "check_out_time") {
+        // Convert date strings to timestamps for sorting
+        const dateA = new Date(a[orderBy]).getTime();
+        const dateB = new Date(b[orderBy]).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      }
+      // Sort alphabetically for other fields
+      const valueA = a[orderBy].toLowerCase();
+      const valueB = b[orderBy].toLowerCase();
+      if (valueA < valueB) return order === "asc" ? -1 : 1;
+      if (valueA > valueB) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filteredVisitors, order, orderBy]);
+
   const columns = useMemo(
     () => [
-      { Header: "Name", accessor: "name" },
-      { Header: "Phone Number", accessor: "phone_number" },
-      { Header: "Check-in Time", accessor: "check_in_time" },
-      { Header: "Check-out Time", accessor: "check_out_time" },
+      { id: "name", label: "Name" },
+      { id: "phone_number", label: "Phone Number" },
+      { id: "check_in_time", label: "Check-in Time" },
+      { id: "check_out_time", label: "Check-out Time" },
       {
-        Header: "Details",
-        accessor: "details",
-        Cell: ({ row }) => (
-          <Button
-            sx={{
-              backgroundColor: "white !important",
-              color: "black !important",
-              border: "1px",
-              borderRadius: "4px !important",
-              padding: "6px 12px",
-              textTransform: "none",
-              boxShadow: "none",
-              "&:hover": {
-                backgroundColor: "#f0f0f0 !important",
-                borderColor: "black",
-              },
-            }}
-            endIcon={
-              <ExpandMore
-                sx={{
-                  transform: expandedRows.includes(row.index)
-                    ? "rotate(180deg)"
-                    : "rotate(0deg)",
-                  transition: "transform 0.3s ease",
-                }}
-              />
-            }
-            onClick={() => toggleRow(row.index)}
-          >
-            Details
-          </Button>
-        ),
-        disableSortBy: true,
+        id: "details",
+        label: "Details",
+        disableSorting: true,
       },
     ],
-    [expandedRows]
+    []
   );
 
+  const toggleRow = (index) => {
+    setExpandedRows((prev) =>
+      prev.includes(index)
+        ? prev.filter((id) => id !== index)
+        : [...prev, index]
+    );
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   const handleKeyDown = (event) => {
-    // Check if Ctrl + Shift are pressed
     if (event.ctrlKey && event.shiftKey && event.key === " ") {
-      event.preventDefault(); // Prevent default spacebar action
+      event.preventDefault();
       const input = event.target;
       const cursorPos = input.selectionStart;
       const value = input.value;
-      // Insert "Ctrl+Shift" at the cursor position
       input.value =
         value.slice(0, cursorPos) + "Ctrl+Shift" + value.slice(cursorPos);
-      input.selectionStart = cursorPos + 10; // Adjust for the length of "Ctrl+Shift"
+      input.selectionStart = cursorPos + 10;
       input.selectionEnd = cursorPos + 10;
     }
   };
@@ -131,7 +125,6 @@ const VisitorTable2 = ({ visitors }) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
-        {/* Date Range Filter */}
         <Box
           sx={{
             mb: 2,
@@ -187,16 +180,28 @@ const VisitorTable2 = ({ visitors }) => {
             <TableHead>
               <TableRow>
                 {columns.map((column) => (
-                  <TableCell key={column.accessor} sx={{ fontWeight: "bold" }}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      {column.Header}
-                    </Box>
+                  <TableCell
+                    key={column.id}
+                    sx={{ fontWeight: "bold" }}
+                    sortDirection={orderBy === column.id ? order : false}
+                  >
+                    {column.disableSorting ? (
+                      column.label
+                    ) : (
+                      <TableSortLabel
+                        active={orderBy === column.id}
+                        direction={orderBy === column.id ? order : "asc"}
+                        onClick={() => handleRequestSort(column.id)}
+                      >
+                        {column.label}
+                      </TableSortLabel>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredVisitors
+              {sortedVisitors
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => (
                   <React.Fragment key={index}>
@@ -206,13 +211,21 @@ const VisitorTable2 = ({ visitors }) => {
                       sx={{ cursor: "pointer" }}
                     >
                       {columns.map((column) => (
-                        <TableCell key={column.accessor}>
-                          {column.accessor === "check_in_time" ||
-                          column.accessor === "check_out_time"
-                            ? formatDateWithPadding(row[column.accessor])
-                            : column.accessor === "details"
-                            ? column.Cell({ row })
-                            : row[column.accessor]}
+                        <TableCell key={column.id}>
+                          {column.id === "check_in_time" ||
+                          column.id === "check_out_time" ? (
+                            formatDateWithPadding(row[column.id])
+                          ) : column.id === "details" ? (
+                            <Box>
+                              {/* Your custom details rendering logic */}
+                              <Typography variant="body2">
+                                See More <b>v</b>
+                              </Typography>
+                              {/* Add more details as needed */}
+                            </Box>
+                          ) : (
+                            row[column.id]
+                          )}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -241,10 +254,7 @@ const VisitorTable2 = ({ visitors }) => {
                                     {formatDateWithPadding(row.check_in_time)}
                                   </Typography>
                                   <Typography variant="subtitle1" gutterBottom>
-                                    <b>Exit Gate:</b> {row.exit_gate}
-                                  </Typography>
-                                  <Typography variant="subtitle1" gutterBottom>
-                                    <b>Check-out Time:</b>{" "}
+                                    <b>Check-Out Time:</b>{" "}
                                     {formatDateWithPadding(row.check_out_time)}
                                   </Typography>
                                   <Typography variant="subtitle1" gutterBottom>

@@ -1,37 +1,35 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/users.js");
 
-// Middleware to check for authentication and role-based access
-const authMiddleware = (requiredRoles = []) => {
-  return async (req, res, next) => {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+const authenticateToken = (req, res, next) => {
+  const token = req.headers["authorization"];
 
-    if (!token) {
-      return res.status(401).json({ msg: "No token, authorization denied" });
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
+  }
+
+  // Verify the token
+  jwt.verify(token.split(" ")[1], process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid token." });
     }
 
-    try {
-      // Verify the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = user; // Attach user data to request object
+    next();
+  });
+};
 
-      // Find the user from the database
-      req.user = await User.findById(decoded.id).select("-password");
-
-      if (!req.user) {
-        return res.status(401).json({ msg: "User not found" });
-      }
-
-      // Check if the user's role is included in the required roles
-      if (requiredRoles.length && !requiredRoles.includes(req.user.role)) {
-        return res.status(403).json({ msg: "Access denied" });
-      }
-
-      // Proceed to the next middleware/handler
-      next();
-    } catch (err) {
-      res.status(401).json({ msg: "Token is not valid" });
+const authorizeRole = (roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ message: "Access denied. Insufficient permissions." });
     }
+    next();
   };
 };
 
-module.exports = authMiddleware;
+module.exports = { authenticateToken, authorizeRole };

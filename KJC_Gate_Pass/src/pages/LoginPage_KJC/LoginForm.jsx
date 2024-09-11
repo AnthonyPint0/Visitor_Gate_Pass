@@ -22,7 +22,6 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [user, setUser] = useState(null); // Store the user data
-  const [logoutTimer, setLogoutTimer] = useState(null); // Store the logout timer
   const navigate = useNavigate();
   const API_URL = API_BASE_URL;
 
@@ -78,17 +77,6 @@ function LoginForm() {
             role: payload.role,
             phone_number: payload.phone_number,
           });
-
-          // Check if token is expired
-          const currentTime = Date.now() / 1000; // in seconds
-          if (payload.exp < currentTime) {
-            handleLogout(); // Auto-logout if token is expired
-          } else {
-            // Set auto-logout timeout to expire when token expires
-            const timeToLogout = (payload.exp - currentTime) * 1000; // in milliseconds
-            const timer = setTimeout(handleLogout, timeToLogout);
-            setLogoutTimer(timer); // Store the timer in state
-          }
         } catch (error) {
           console.error("Error decoding token:", error);
           navigate("/unauthorized");
@@ -97,14 +85,7 @@ function LoginForm() {
     };
 
     checkToken(); // Call the function on component mount
-
-    return () => {
-      // Clear the logout timer on component unmount
-      if (logoutTimer) {
-        clearTimeout(logoutTimer);
-      }
-    };
-  }, [navigate, logoutTimer]);
+  }, [navigate]); // Empty dependency array ensures this runs only once
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -120,7 +101,7 @@ function LoginForm() {
         // Store token in localStorage
         localStorage.setItem("token", response.data.token);
 
-        // Extract role and token expiration time from the token
+        // Extract role from the token to navigate appropriately
         const token = response.data.token;
         const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
         const user = {
@@ -131,12 +112,6 @@ function LoginForm() {
         };
 
         setUser(user); // Set user state
-
-        // Set auto-logout timeout based on token expiry
-        const currentTime = Date.now() / 1000; // in seconds
-        const timeToLogout = (payload.exp - currentTime) * 1000; // in milliseconds
-        const timer = setTimeout(handleLogout, timeToLogout);
-        setLogoutTimer(timer);
 
         // Navigate based on role
         if (user.role === "HOD") {
@@ -193,9 +168,6 @@ function LoginForm() {
   const handleLogout = () => {
     localStorage.removeItem("token"); // Remove the token from localStorage
     setUser(null); // Clear the user state
-    if (logoutTimer) {
-      clearTimeout(logoutTimer); // Clear the auto-logout timer
-    }
     notifySuccess("Logged out successfully!");
   };
 
@@ -316,7 +288,7 @@ function LoginForm() {
               },
             }}
           >
-            Go to Your Page
+            Go to Page
           </Button>
           <Button
             variant="outlined"

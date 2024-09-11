@@ -73,11 +73,21 @@ const Download_Button = () => {
     }
 
     try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
       const response = await axios.get(
         `${API_URL}/reports/export-visitor-report`,
         {
           params: { startDate: formattedStartDate, endDate: formattedEndDate },
           responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 

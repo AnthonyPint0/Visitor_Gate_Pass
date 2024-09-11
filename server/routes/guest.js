@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const {
+  authenticateToken,
+  authorizeRole,
+} = require("../middleware/authMiddleware");
+const {
   sendInvitation,
   getGuestHistory,
   getUpcomingEvents,
@@ -9,14 +13,40 @@ const {
 } = require("../controllers/guestController");
 const { validateSendInvitation } = require("../utils/validator");
 
-router.post("/send-invitation", validateSendInvitation, sendInvitation);
+router.post(
+  "/send-invitation",
+  authenticateToken,
+  authorizeRole(["admin", "HOD"]),
+  validateSendInvitation,
+  sendInvitation
+);
 
-router.get("/guest-history", getGuestHistory);
+router.get(
+  "/guest-history",
+  authenticateToken,
+  authorizeRole(["admin", "HOD"]),
+  getGuestHistory
+);
 
-router.get("/upcoming-events", getUpcomingEvents);
+router.get(
+  "/upcoming-events",
+  authenticateToken,
+  authorizeRole(["admin", "HOD"]),
+  getUpcomingEvents
+);
 
-router.post("/resend-invitation/:passId", resendInvitation);
+router.post(
+  "/resend-invitation/:passId",
+  authenticateToken,
+  authorizeRole(["admin", "HOD"]),
+  resendInvitation
+);
 
-router.put("/update/:id", updateInvitation);
+router.put(
+  "/update/:id",
+  authenticateToken,
+  authorizeRole(["admin", "HOD"]),
+  updateInvitation
+);
 
 module.exports = router;

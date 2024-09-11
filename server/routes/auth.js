@@ -2,7 +2,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const authMiddleware = require("../middleware/authMiddleware");
+const {
+  authenticateToken,
+  authorizeRole,
+} = require("../middleware/authMiddleware");
 const router = express.Router();
 const UsersModel = require("../models/users.js");
 const { sendOtpEmail } = require("../models/emailService.js");

@@ -1,6 +1,10 @@
 const GuestModel = require("../models/guest");
 const transporter = require("../config/mailer");
 const generateUnique10DigitUUID = require("../utils/uniqueIdGenerator");
+const {
+  authenticateToken,
+  authorizeRole,
+} = require("../middleware/authMiddleware");
 const formatDateTime = require("../utils/dateUtils"); // Import your date formatting
 const nodemailer = require("nodemailer");
 const getEmailTemplate = require("../utils/emailTemplateService");

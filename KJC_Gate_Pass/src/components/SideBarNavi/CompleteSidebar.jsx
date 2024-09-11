@@ -6,6 +6,7 @@ import {
   SquareMenu,
   LayoutDashboard,
   Menu,
+  Users,
 } from "lucide-react"; // Import hamburger icon
 
 function CompleteSidebar({ isActive }) {
@@ -120,6 +121,12 @@ function CompleteSidebar({ isActive }) {
             text="Visitor Details"
             active={isActive === "visitorDetails"}
             naviLink="visitor_details"
+          />
+          <SidebarItem
+            icon={<Users size={20} />}
+            text="Checkin Guest"
+            active={isActive === "checkinGuest"}
+            naviLink="checkin_guest"
           />
         </Sidebar>
       )}
