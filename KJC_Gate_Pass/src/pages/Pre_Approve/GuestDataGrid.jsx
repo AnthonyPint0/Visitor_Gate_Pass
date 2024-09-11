@@ -303,7 +303,7 @@ const GuestDataGrid = ({ userINFO }) => {
     {
       field: "mobileNo",
       headerName: "Mobile No",
-      width: 150,
+      width: 100,
       sortable: false,
       renderCell: (params) =>
         editMode[params.id] ? (
@@ -325,7 +325,7 @@ const GuestDataGrid = ({ userINFO }) => {
     {
       field: "date",
       headerName: "Date",
-      width: 130,
+      width: 100,
       sortable: true,
 
       renderCell: (params) =>
@@ -394,7 +394,7 @@ const GuestDataGrid = ({ userINFO }) => {
     {
       field: "invitedAs",
       headerName: "Invited As",
-      width: 150,
+      width: 105,
       sortable: true,
 
       renderCell: (params) =>
@@ -412,6 +412,29 @@ const GuestDataGrid = ({ userINFO }) => {
           />
         ) : (
           <div>{params.value}</div>
+        ),
+    },
+    {
+      field: "isVisited",
+      headerName: "Has Visited?",
+      width: 105,
+      sortable: true,
+
+      renderCell: (params) =>
+        editMode[params.id] ? (
+          <input
+            value={params.value}
+            onChange={(e) => {
+              e.stopPropagation();
+              handleCellEditCommit({
+                id: params.id,
+                field: "isVisited",
+                value: e.target.value,
+              });
+            }}
+          />
+        ) : (
+          <div>{params.value == false ? "No" : "Yes"}</div>
         ),
     },
     {

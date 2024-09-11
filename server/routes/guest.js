@@ -23,8 +23,8 @@ router.post(
 
 router.get(
   "/guest-history",
-  // authenticateToken,
-  // authorizeRole(["admin", "HOD"]),
+  authenticateToken,
+  authorizeRole(["admin", "HOD"]),
   getGuestHistory
 );
 
