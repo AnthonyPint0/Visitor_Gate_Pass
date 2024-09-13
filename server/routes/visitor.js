@@ -181,7 +181,6 @@ router.post(
       // Extract VisitorSessionInfo from req.body.params
       const { VisitorSessionInfo } = req.body;
 
-      // Log the extracted object
       console.log("Extracted VisitorSessionInfo:", VisitorSessionInfo);
 
       const {
@@ -196,6 +195,7 @@ router.post(
         Photo,
       } = VisitorSessionInfo;
 
+      // Check for missing fields
       if (
         !PhoneNumber ||
         !Name ||
@@ -219,42 +219,35 @@ router.post(
           .json({ checking: false, msg: "Invalid Checkin_time format" });
       }
 
-      let ExistingVisitor = true;
-      let visitorId = null;
-
-      // Find the visitor by phone number
+      // Step 1: Check if the visitor has an ongoing session
       const visitor = await VisitorModel.findOne({ phone_number: PhoneNumber });
       if (!visitor) {
-        ExistingVisitor = false; // msg: 'Visitor not found'
-      } else {
-        visitorId = visitor._id;
+        return res.json({ checking: false, msg: "Visitor not found" });
       }
 
-      // Check if the visitor has an ongoing session
       const ongoingSession = await VisitorSession.findOne({
-        visitor_id: visitorId,
+        visitor_id: visitor._id,
         check_out_time: null,
       });
 
+      if (ongoingSession) {
+        return res.json({
+          checking: false,
+          msg: "Visitor has an ongoing session",
+        });
+      }
+
+      let visitorId = visitor ? visitor._id : null;
+      let ExistingVisitor = !!visitorId;
+
+      // Step 2: Handle ID card availability
       const ids = Array.isArray(IdCards) ? IdCards : [IdCards];
       const cards = await VisitorCard.find({ card_id: { $in: ids } });
 
       const unavailableIds = [];
       cards.forEach((card) => {
-        if (card.status !== "available") {
-          unavailableIds.push(card.card_id);
-        }
-      });
-
-      cards.forEach((card) => {
-        if (card.status === null) {
-          unavailableIds.push(card.card_id);
-        }
-      });
-
-      ids.forEach((card) => {
-        if (card === null) {
-          unavailableIds.push(card);
+        if (card.status !== "available" || card === null) {
+          unavailableIds.push(card.card_id || card);
         }
       });
 
@@ -265,27 +258,17 @@ router.post(
         });
       }
 
-      if (ongoingSession) {
-        return res.json({
-          checking: false,
-          msg: "Visitor has an ongoing session",
-        });
-      }
-
-      if (ExistingVisitor) {
-        visitorId = visitor._id;
-      } else {
-        // Create a new visitor
+      // Step 3: If visitor exists, use the existing visitor ID; otherwise, create a new visitor
+      if (!ExistingVisitor) {
         const newVisitor = new VisitorModel({
           name: Name,
           phone_number: PhoneNumber,
         });
-
         const savedVisitor = await newVisitor.save();
         visitorId = savedVisitor._id;
       }
 
-      // Create a new document in visitor_sessions
+      // Step 4: Create a new session for the visitor
       const newSession = new VisitorSession({
         _id: new mongoose.Types.ObjectId(),
         visitor_id: visitorId,
@@ -302,7 +285,7 @@ router.post(
 
       await newSession.save();
 
-      // Create a new document in visitor_groups
+      // Step 5: Create a new group for the visitor's session
       const groupMembers = ids.map((id) => ({
         card_id: id,
         check_in_time: checkInDate,
@@ -319,11 +302,11 @@ router.post(
 
       await newGroup.save();
 
-      // Update the group_id in the session document
+      // Step 6: Update the group_id in the session document
       newSession.group_id = newGroup._id;
       await newSession.save();
 
-      // Update visitor_cards with appropriate status and assignments
+      // Step 7: Update visitor cards with appropriate status and assignments
       await Promise.all(
         groupMembers.map(async (member, index) => {
           await VisitorCard.updateOne(
@@ -338,13 +321,14 @@ router.post(
         })
       );
 
+      // Step 8: Respond with success
       return res.json({
         checking: true,
         msg: "Visitor check-in processed successfully",
       });
     } catch (err) {
       console.error("Error in Register/Checkin Visitor:", err);
-      res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error" });
     }
   }
 );
