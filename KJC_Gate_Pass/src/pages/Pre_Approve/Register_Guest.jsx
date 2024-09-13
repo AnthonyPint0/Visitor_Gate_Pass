@@ -69,15 +69,21 @@ const Register_Guest = ({ handleClose, userINFO }) => {
     const { id, value } = e.target;
 
     if (id === "mobileNo") {
+      // Remove non-numeric characters
       const numericValue = value.replace(/[^0-9]/g, "");
+
+      // Update form data
       setFormData((prevData) => ({
         ...prevData,
         [id]: numericValue,
       }));
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        mobileNo: numericValue.length > 0 ? "" : "Mobile number is required",
-      }));
+
+      // Validate the mobile number
+      if (numericValue.length === 0) {
+        notifyErr("Mobile number is required");
+      } else if (numericValue.length !== 10) {
+        notifyErr("Mobile number must be exactly 10 digits");
+      }
     } else if (id === "email") {
       setFormData((prevData) => ({
         ...prevData,
@@ -104,6 +110,13 @@ const Register_Guest = ({ handleClose, userINFO }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate mobile number format
+    const phoneNumberPattern = /^\d{10}$/; // Regular expression for exactly 10 digits
+    if (!phoneNumberPattern.test(formData.mobileNo)) {
+      notifyErr("Invalid phone number. Please ensure it is exactly 10 digits.");
+      return;
+    }
 
     console.log("Form Data:", {
       name: formData.name,

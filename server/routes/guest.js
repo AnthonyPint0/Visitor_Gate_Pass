@@ -10,6 +10,7 @@ const {
   getUpcomingEvents,
   resendInvitation,
   updateInvitation,
+  deleteInvitation,
 } = require("../controllers/guestController");
 const { validateSendInvitation } = require("../utils/validator");
 
@@ -47,6 +48,13 @@ router.put(
   authenticateToken,
   authorizeRole(["admin", "HOD"]),
   updateInvitation
+);
+
+router.delete(
+  "/delete/:id",
+  authenticateToken,
+  authorizeRole(["admin", "HOD"]),
+  deleteInvitation
 );
 
 module.exports = router;

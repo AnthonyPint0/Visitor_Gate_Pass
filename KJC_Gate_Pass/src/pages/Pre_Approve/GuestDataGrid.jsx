@@ -6,6 +6,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
 import "./custom-toastify.css"; // Your custom CSS file
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -15,6 +16,7 @@ import { useEffect, useState, useCallback } from "react";
 import { API_BASE_URL, formatDateWithPadding } from "../../library/helper";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { setTime } from "react-datepicker/dist/date_utils";
 
 const GuestDataGrid = ({ userINFO }) => {
   const [editMode, setEditMode] = useState({}); // Track which rows are in edit mode
@@ -118,10 +120,56 @@ const GuestDataGrid = ({ userINFO }) => {
     }));
   };
 
+  const handleDeleteClick = async (id) => {
+    const rowToUpdate = rows.find((row) => row.id === id); // Assuming this is the MongoDB _id
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete this with the Guestname: ${rowToUpdate.name}?`
+    );
+    if (!confirmDelete) {
+      return; // Exit if the user cancels
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("No token found");
+        notifyErr("Authentication token missing. Please log in again.");
+        return;
+      }
+
+      // Send the delete request to your API using MongoDB _id
+      await axios.delete(`${API_URL}/guest/delete/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      notifySuccess(`Deleted Guest: ${rowToUpdate.name}`);
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } catch (error) {
+      console.error("Error deleting row:", error);
+      notifyErr("Failed to delete row. Please try again later.");
+    }
+
+    // Exit edit mode
+    toggleEditMode(id);
+  };
+
   const handleSaveClick = async (id) => {
     // Find the row that is being edited
     const rowToUpdate = rows.find((row) => row.id === id); // Assuming this is the MongoDB _id
     console.log(rowToUpdate);
+
+    // Validate mobile number format
+    const phoneNumberPattern = /^\d{10}$/; // Regular expression for exactly 10 digits
+    if (!phoneNumberPattern.test(rowToUpdate.mobileNo)) {
+      notifyErr("Invalid phone number. Please ensure it is exactly 10 digits.");
+      return;
+    }
 
     if (!rowToUpdate) {
       console.error("Row not found for ID:", id);
@@ -252,6 +300,31 @@ const GuestDataGrid = ({ userINFO }) => {
     }
   };
 
+  const handleChange = (e) => {
+    e.stopPropagation();
+
+    const value = e.target.value;
+    // Remove non-digit characters
+    const numericValue = value.replace(/\D/g, "");
+
+    // Restrict to 10 digits
+    if (numericValue.length <= 10) {
+      handleCellEditCommit({
+        id: params.id,
+        field: "mobileNo",
+        value: numericValue,
+      });
+    }
+  };
+
+  const handleDateChange = (newValue) => {
+    handleCellEditCommit({
+      id: params.id,
+      field: "date",
+      value: newValue,
+    });
+  };
+
   const columns = [
     {
       field: "passId",
@@ -311,15 +384,10 @@ const GuestDataGrid = ({ userINFO }) => {
       renderCell: (params) =>
         editMode[params.id] ? (
           <input
+            type="text"
             value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "mobileNo",
-                value: e.target.value,
-              });
-            }}
+            onChange={handleChange}
+            maxLength={10} // This is just a visual cue; actual validation is in handleChange
           />
         ) : (
           <div>{params.value}</div>
@@ -333,17 +401,13 @@ const GuestDataGrid = ({ userINFO }) => {
 
       renderCell: (params) =>
         editMode[params.id] ? (
-          <input
-            type="date"
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "date",
-                value: e.target.value,
-              });
+          <DatePicker
+            label="Expected Date"
+            value={params.value ? new Date(params.value) : null} // Ensure value is in Date format
+            onChange={(newValue) => {
+              handleDateChange(newValue);
             }}
+            renderInput={(params) => <TextField {...params} />}
           />
         ) : (
           <div>{params.value}</div>
@@ -460,6 +524,12 @@ const GuestDataGrid = ({ userINFO }) => {
                 onClick={() => handleCancelClick(params.id)}
               >
                 <CancelIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={() => handleDeleteClick(params.id)}
+              >
+                <DeleteIcon fontSize="small" />
               </IconButton>
             </>
           ) : (

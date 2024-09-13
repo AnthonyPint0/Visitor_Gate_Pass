@@ -1,6 +1,6 @@
 {
   "name": "Kurian George",
-  "email": "kriangeorge@kristujayanti.com",
+  "email": "kuriangeorge@kristujayanti.com",
   "password": "zxcv",
   "role": "security",
   "phone_number": "1234567890",

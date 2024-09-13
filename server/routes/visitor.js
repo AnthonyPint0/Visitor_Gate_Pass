@@ -178,7 +178,7 @@ router.post(
   authorizeRole(["admin", "security"]),
   async (req, res) => {
     try {
-      // Extract VisitorSessionInfo from req.body
+      // Extract VisitorSessionInfo from req.body.params
       const { VisitorSessionInfo } = req.body;
 
       // Log the extracted object
@@ -191,12 +191,10 @@ router.post(
         EntryGate,
         GroupSize,
         Checkin_time,
-        VehicleNo,
         IdCards,
         Photo,
       } = VisitorSessionInfo;
 
-      // Validate required fields
       if (
         !PhoneNumber ||
         !Name ||
@@ -212,7 +210,6 @@ router.post(
           .json({ checking: false, msg: "Missing required fields" });
       }
 
-      // Validate Checkin_time
       const checkInDate = new Date(Checkin_time);
       if (isNaN(checkInDate.getTime())) {
         console.log("Invalid Checkin_time format:", Checkin_time);
@@ -221,33 +218,43 @@ router.post(
           .json({ checking: false, msg: "Invalid Checkin_time format" });
       }
 
+      let ExistingVisitor = true;
+      let visitorId = null;
+
       // Find the visitor by phone number
-      let visitor = await VisitorModel.findOne({ phone_number: PhoneNumber });
-      let ExistingVisitor = !!visitor;
-      let visitorId = ExistingVisitor ? visitor._id : null;
-
-      // Check if the visitor has an ongoing session
-      if (ExistingVisitor) {
-        const ongoingSession = await VisitorSession.findOne({
-          visitor_id: visitorId,
-          check_out_time: null,
-        });
-
-        if (ongoingSession) {
-          return res.json({
-            checking: false,
-            msg: "Visitor has an ongoing session",
-          });
-        }
+      const visitor = await VisitorModel.findOne({ phone_number: PhoneNumber });
+      if (!visitor) {
+        ExistingVisitor = false; // msg: 'Visitor not found'
+      } else {
+        visitorId = visitor._id;
       }
 
-      // Handle ID card availability
+      // Check if the visitor has an ongoing session
+      const ongoingSession = await VisitorSession.findOne({
+        visitor_id: visitorId,
+        check_out_time: null,
+      });
+
       const ids = Array.isArray(IdCards) ? IdCards : [IdCards];
       const cards = await VisitorCard.find({ card_id: { $in: ids } });
 
-      const unavailableIds = ids.filter((id) => {
-        const card = cards.find((card) => card.card_id === id);
-        return !card || card.status !== "available";
+      const unavailableIds = [];
+      cards.forEach((card) => {
+        if (card.status !== "available") {
+          unavailableIds.push(card.card_id);
+        }
+      });
+
+      cards.forEach((card) => {
+        if (card.status === null) {
+          unavailableIds.push(card.card_id);
+        }
+      });
+
+      ids.forEach((card) => {
+        if (card === null) {
+          unavailableIds.push(card);
+        }
       });
 
       if (unavailableIds.length > 0) {
@@ -257,16 +264,85 @@ router.post(
         });
       }
 
-      // Proceed with check-in logic (not shown here but you can add it as needed)
+      if (ongoingSession) {
+        return res.json({
+          checking: false,
+          msg: "Visitor has an ongoing session",
+        });
+      }
 
-      // Respond with success if check-in is processed
+      if (ExistingVisitor) {
+        visitorId = visitor._id;
+      } else {
+        // Create a new visitor
+        const newVisitor = new VisitorModel({
+          name: Name,
+          phone_number: PhoneNumber,
+        });
+
+        const savedVisitor = await newVisitor.save();
+        visitorId = savedVisitor._id;
+      }
+
+      // Create a new document in visitor_sessions
+      const newSession = new VisitorSession({
+        _id: new mongoose.Types.ObjectId(),
+        visitor_id: visitorId,
+        purpose_of_visit: PurposeOfVisit,
+        entry_gate: EntryGate,
+        check_in_time: checkInDate,
+        exit_gate: null,
+        check_out_time: null,
+        group_size: GroupSize,
+        group_id: new mongoose.Types.ObjectId(), // Placeholder for group_id
+        photos: Photo,
+      });
+
+      await newSession.save();
+
+      // Create a new document in visitor_groups
+      const groupMembers = ids.map((id) => ({
+        card_id: id,
+        check_in_time: checkInDate,
+        exit_gate: null,
+        check_out_time: null,
+        status: "checked_in",
+      }));
+
+      const newGroup = new VisitorGroup({
+        _id: new mongoose.Types.ObjectId(),
+        session_id: newSession._id,
+        group_members: groupMembers,
+      });
+
+      await newGroup.save();
+
+      // Update the group_id in the session document
+      newSession.group_id = newGroup._id;
+      await newSession.save();
+
+      // Update visitor_cards with appropriate status and assignments
+      await Promise.all(
+        groupMembers.map(async (member, index) => {
+          await VisitorCard.updateOne(
+            { card_id: member.card_id },
+            {
+              $set: {
+                status: "assigned",
+                assigned_to: newGroup.group_members[index]._id,
+              },
+            }
+          );
+        })
+      );
+
       return res.json({
         checking: true,
-        msg: "Check-in processed successfully",
+        msg: "Visitor check-in processed successfully",
       });
     } catch (err) {
       console.error("Error in Register/Checkin Visitor:", err);
-      return res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 );
