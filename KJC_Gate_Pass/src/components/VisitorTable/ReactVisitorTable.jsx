@@ -1,32 +1,19 @@
-import React, { useMemo, useState } from "react";
-import { useTable, useSortBy, usePagination } from "react-table";
+import React, { useEffect, useMemo, useState } from "react";
 import StatusBadge from "./StatusBadge.jsx";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import {
-  Table,
-  TableBody,
-  TableCell,
   TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   TextField,
   Container,
   Typography,
-  Button,
   Box,
   styled,
 } from "@mui/material";
+import { formatDateWithPadding } from "../../library/helper.js";
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   marginTop: theme.spacing(4),
-}));
-
-const StyledTableHead = styled(TableHead)(({ theme }) => ({
-  backgroundColor: theme.palette.grey[200],
-}));
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  fontWeight: "bold",
 }));
 
 const FilterContainer = styled("div")(({ theme }) => ({
@@ -42,104 +29,111 @@ const FilterContainer = styled("div")(({ theme }) => ({
 const PhotoCell = styled("div")({
   display: "flex",
   justifyContent: "center",
+  alignItems: "center",
 });
 
-const PaginationControls = styled("div")(({ theme }) => ({
-  display: "flex",
-  justifyContent: "space-between",
-  marginTop: theme.spacing(2),
-}));
-
-const HorizontalStatusBadgeContainer = styled(Box)({
+const HorizontalStatusBadgeContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexWrap: "nowrap",
-  gap: "8px",
-  overflowX: "auto",
-});
+  gap: "4px",
+  marginBottom: "12px", // Adjust this value as needed
+  paddingTop: "6px",
+  fontSize: "13px",
+}));
 
 const ReactVisitorTable = ({ visitors }) => {
   const [filterText, setFilterText] = useState("");
+  const [processedVisitors, setProcessedVisitors] = useState([]);
+
+  // Use effect to process the visitors data
+  useEffect(() => {
+    const updatedVisitors = visitors.map((visitor) => ({
+      ...visitor,
+      check_in_time: visitor.check_in_time
+        ? formatDateWithPadding(visitor.check_in_time)
+        : "",
+      check_out_time: visitor.check_out_time
+        ? formatDateWithPadding(visitor.check_out_time)
+        : "",
+    }));
+    setProcessedVisitors(updatedVisitors);
+  }, [visitors]);
 
   const columns = useMemo(
     () => [
-      { Header: "Name", accessor: "name" },
-      { Header: "Phone Number", accessor: "phone_number" },
-      { Header: "Purpose of Visit", accessor: "purpose_of_visit" },
-      { Header: "Entry Gate", accessor: "entry_gate" },
+      { field: "name", headerName: "Name", width: 90, sortable: true },
       {
-        Header: "Check-In Time",
-        accessor: "check_in_time",
-        Cell: ({ value }) => new Date(value).toLocaleString(),
+        field: "phone_number",
+        headerName: "Phone Number",
+        width: 110,
+        sortable: true,
       },
-      { Header: "Exit Gate", accessor: "exit_gate" },
       {
-        Header: "Check-Out Time",
-        accessor: "check_out_time",
-        Cell: ({ value }) => (value ? new Date(value).toLocaleString() : "N/A"),
+        field: "purpose_of_visit",
+        headerName: "Purpose of Visit",
+        width: 130,
+        sortable: true,
       },
-      { Header: "Group Size", accessor: "group_size" },
       {
-        Header: "Visitor ID Cards",
-        accessor: "visitor_cards",
-        Cell: ({ value }) => (
+        field: "entry_gate",
+        headerName: "Entry Gate",
+        width: 95,
+        sortable: true,
+      },
+      {
+        field: "check_in_time",
+        headerName: "Check-In Time",
+        width: 180,
+        sortable: true,
+      },
+      {
+        field: "exit_gate",
+        headerName: "Exit Gate",
+        width: 90,
+        sortable: true,
+      },
+      {
+        field: "check_out_time",
+        headerName: "Check-Out Time",
+        width: 180,
+        sortable: true,
+      },
+      {
+        field: "visitor_cards",
+        headerName: "Visitor ID Cards",
+        width: 220,
+        sortable: false,
+        renderCell: (params) => (
           <HorizontalStatusBadgeContainer>
-            {value.map((card) => (
+            {params.value.map((card) => (
               <StatusBadge key={card.card_id} card={card} />
             ))}
           </HorizontalStatusBadgeContainer>
         ),
-        disableSortBy: true,
       },
       {
-        Header: "Photos",
-        accessor: "photos",
-        Cell: ({ value }) => (
+        field: "photos",
+        headerName: "Photos",
+        width: 100, // Adjust width as needed
+        disableColumnMenu: true,
+        sortable: false,
+        renderCell: (params) => (
           <PhotoCell>
-            <img src={value} alt="Visitor" width="30" height="30" />
+            <img src={params.value} alt="Visitor" width="50" height="60" />
           </PhotoCell>
         ),
-        disableSortBy: true,
       },
     ],
     []
   );
 
   const filteredData = useMemo(() => {
-    return visitors.filter(
+    return processedVisitors.filter(
       (visitor) =>
         visitor.name.toLowerCase().includes(filterText.toLowerCase()) ||
         visitor.phone_number.includes(filterText)
     );
-  }, [filterText, visitors]);
-
-  const data = useMemo(() => filteredData, [filteredData]);
-
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    page,
-    prepareRow,
-    state: { pageIndex, pageSize },
-    setPageSize,
-    gotoPage,
-    canPreviousPage,
-    canNextPage,
-    pageCount,
-    nextPage,
-    previousPage,
-  } = useTable(
-    {
-      columns,
-      data,
-      initialState: {
-        pageIndex: 0,
-        pageSize: 10,
-      },
-    },
-    useSortBy,
-    usePagination
-  );
+  }, [filterText, processedVisitors]);
 
   return (
     <Container
@@ -149,9 +143,9 @@ const ReactVisitorTable = ({ visitors }) => {
         px: {
           xs: 0,
           sm: 0,
-          md: 3,
-          lg: 4,
-          xl: 5,
+          md: 1,
+          lg: 1,
+          xl: 1,
           marginBottom: 6,
         },
       }}
@@ -182,67 +176,30 @@ const ReactVisitorTable = ({ visitors }) => {
       </FilterContainer>
 
       <StyledTableContainer component={Paper}>
-        <Table {...getTableProps()}>
-          <StyledTableHead>
-            {headerGroups.map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                {...headerGroup.getHeaderGroupProps()}
-              >
-                {headerGroup.headers.map((column) => (
-                  <StyledTableCell
-                    key={column.id}
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                  >
-                    {column.render("Header")}
-                    <span>
-                      {column.isSorted
-                        ? column.isSortedDesc
-                          ? " ▲"
-                          : " ▼"
-                        : ""}
-                    </span>
-                  </StyledTableCell>
-                ))}
-              </TableRow>
-            ))}
-          </StyledTableHead>
-          <TableBody {...getTableBodyProps()}>
-            {page.map((row) => {
-              prepareRow(row);
-              return (
-                <TableRow key={row.id} {...row.getRowProps()}>
-                  {row.cells.map((cell) => (
-                    <TableCell key={cell.column.id} {...cell.getCellProps()}>
-                      {cell.render("Cell")}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        <Box sx={{ height: "100%", width: "100%" }}>
+          <DataGrid
+            sx={{
+              border: "1px solid white",
+              borderRadius: "15px",
+              boxShadow: "2",
+              backgroundColor: "#ffffff",
+            }}
+            rows={filteredData}
+            columns={columns}
+            getRowId={(row) => row._id} // Use _id as the unique id
+            initialState={{
+              pagination: { paginationModel: { pageSize: 10 } },
+            }}
+            pageSizeOptions={[10, 20, 50]}
+            components={{
+              Toolbar: GridToolbar,
+            }}
+            disableSelectionOnClick
+            disableColumnMenu
+            style={{ height: 650, width: "100%" }}
+          />
+        </Box>
       </StyledTableContainer>
-
-      <PaginationControls>
-        <Button
-          variant="outlined"
-          onClick={() => previousPage()}
-          disabled={!canPreviousPage}
-        >
-          Previous
-        </Button>
-        <Typography sx={{ fontSize: { xs: 12, sm: 14, md: 14 }, mt: 1 }}>
-          Page {pageIndex + 1} of {pageCount}
-        </Typography>
-        <Button
-          variant="outlined"
-          onClick={() => nextPage()}
-          disabled={!canNextPage}
-        >
-          Next
-        </Button>
-      </PaginationControls>
     </Container>
   );
 };

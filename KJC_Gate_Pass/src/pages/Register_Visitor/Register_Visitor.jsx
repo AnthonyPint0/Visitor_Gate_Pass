@@ -179,7 +179,7 @@ function Register_Visitor() {
         }
       );
 
-      // console.log(response.data);
+      console.log(response.data);
       return response.data.map((item) => String(item));
     } catch (error) {
       console.error("Error fetching options:", error);

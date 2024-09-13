@@ -212,6 +212,7 @@ function LoginForm() {
               fullWidth
               margin="normal"
               variant="outlined"
+              autoComplete="email"
               required
             />
             <TextField
@@ -219,6 +220,7 @@ function LoginForm() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={handlePasswordChange}
+              autoComplete="current-password"
               fullWidth
               margin="normal"
               variant="outlined"

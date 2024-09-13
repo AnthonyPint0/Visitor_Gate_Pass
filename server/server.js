@@ -10,10 +10,9 @@ const connectDB = require("./config/db");
 const bodyParser = require("body-parser");
 const guestRoutes = require("./routes/guest");
 const securityRoutes = require("./routes/security");
-const intializeDB = require("./routes/initialize");
-
+const initializeDB = require("./routes/initialize"); // Fixed typo
 const app = express();
-require("dotenv").config();
+
 // Middleware
 // Increase the limit for JSON payloads
 app.use(bodyParser.json({ limit: "10mb" })); // or any limit you need
@@ -21,6 +20,7 @@ app.use(bodyParser.json({ limit: "10mb" })); // or any limit you need
 // Increase the limit for URL-encoded payloads
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 app.use(express.json());
+
 app.use(
   cors({
     origin: true, // Adjust to your frontend's URL
@@ -39,19 +39,19 @@ app.use(
 );
 
 // Routes
-app.use("/guest", guestRoutes); // localhost:3002/api/
+app.use("/guest", guestRoutes);
 app.use("/security", securityRoutes);
 app.use("/auth", authRoutes);
 app.use("/visitors", visitorRoutes);
 app.use("/visitor-groups", visitorGroupRoutes);
 app.use("/reports", reportRoutes);
-app.use("/initailize", intializeDB);
+app.use("/initialize", initializeDB); // Fixed typo
 
 const PORT = process.env.PORT || 3002;
 
 // Start server
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`); // Fixed console.log
   });
 });

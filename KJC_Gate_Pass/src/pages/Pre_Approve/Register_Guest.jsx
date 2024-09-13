@@ -276,7 +276,9 @@ const Register_Guest = ({ handleClose, userINFO }) => {
                       label="Expected Date"
                       value={formData.date}
                       onChange={handleDateChange}
-                      renderInput={(params) => <TextField {...params} />}
+                      slots={{
+                        textField: (params) => <TextField {...params} />,
+                      }}
                     />
                   </LocalizationProvider>
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>

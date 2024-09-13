@@ -78,8 +78,8 @@ router.get(
 
 router.get(
   "/visitor-sessions-today",
-  // authenticateToken,
-  // authorizeRole(["admin", "security"]),
+  authenticateToken,
+  authorizeRole(["admin", "security"]),
   async (req, res) => {
     try {
       // Get today's start and end timestamps
@@ -191,6 +191,7 @@ router.post(
         EntryGate,
         GroupSize,
         Checkin_time,
+        VehicleNo,
         IdCards,
         Photo,
       } = VisitorSessionInfo;
@@ -291,6 +292,7 @@ router.post(
         purpose_of_visit: PurposeOfVisit,
         entry_gate: EntryGate,
         check_in_time: checkInDate,
+        vehicle_number: VehicleNo || null,
         exit_gate: null,
         check_out_time: null,
         group_size: GroupSize,
@@ -415,6 +417,7 @@ router.get(
             purpose_of_visit: "$sessionDetails.purpose_of_visit",
             entry_gate: "$sessionDetails.entry_gate",
             check_in_time: "$sessionDetails.check_in_time",
+            vehicle_number: "$sessionDetails.vehicle_number",
             group_size: "$sessionDetails.group_size",
             photos: {
               $cond: {

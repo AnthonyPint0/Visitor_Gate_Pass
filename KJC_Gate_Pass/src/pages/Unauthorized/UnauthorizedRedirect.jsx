@@ -7,19 +7,27 @@ const UnauthorizedRedirect = () => {
   const [countdown, setCountdown] = useState(5); // Initial countdown time in seconds
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    // Handle countdown
+    const countdownTimer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
-          navigate("/login");
+          clearInterval(countdownTimer); // Clear the interval before redirecting
           return 0;
         }
         return prev - 1;
       });
     }, 1000); // Update countdown every second
 
-    // Cleanup the interval when the component unmounts
-    return () => clearInterval(timer);
+    // Navigate after the countdown reaches 0
+    const redirectTimer = setTimeout(() => {
+      navigate("/login");
+    }, 5000); // Redirect after 5 seconds
+
+    // Cleanup the interval and timeout when the component unmounts
+    return () => {
+      clearInterval(countdownTimer);
+      clearTimeout(redirectTimer);
+    };
   }, [navigate]);
 
   return (

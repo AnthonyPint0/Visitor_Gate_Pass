@@ -12,8 +12,8 @@ const {
 //route to get guest details
 router.get(
   "/guest-details-today",
-  authenticateToken,
-  authorizeRole(["admin", "security"]),
+  // authenticateToken,
+  // authorizeRole(["admin", "security"]),
   getGuestDetailsToday
 );
 

@@ -518,7 +518,9 @@ const GuestDataGrid = ({ userINFO }) => {
               label="Filter by Date"
               value={filterDate}
               onChange={handleDateFilterChange}
-              renderInput={(params) => <TextField {...params} />}
+              slots={{
+                textField: (params) => <TextField {...params} />,
+              }}
             />
           </LocalizationProvider>
         </Stack>

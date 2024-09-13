@@ -21,9 +21,7 @@ const getGuestDetailsToday = async (req, res) => {
     }).select("name passId email mobile event invitedAs eventDateTime");
 
     if (guests.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No unchecked-in guests found for today" });
+      return res.status(200).json([]);
     }
 
     res.status(200).json(guests);
