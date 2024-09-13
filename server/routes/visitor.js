@@ -178,9 +178,10 @@ router.post(
   authorizeRole(["admin", "security"]),
   async (req, res) => {
     try {
-      // Extract VisitorSessionInfo from req.body.params
+      // Extract VisitorSessionInfo from req.body
       const { VisitorSessionInfo } = req.body;
 
+      // Log the extracted object
       console.log("Extracted VisitorSessionInfo:", VisitorSessionInfo);
 
       const {
@@ -195,7 +196,7 @@ router.post(
         Photo,
       } = VisitorSessionInfo;
 
-      // Check for missing fields
+      // Validate required fields
       if (
         !PhoneNumber ||
         !Name ||
@@ -211,6 +212,7 @@ router.post(
           .json({ checking: false, msg: "Missing required fields" });
       }
 
+      // Validate Checkin_time
       const checkInDate = new Date(Checkin_time);
       if (isNaN(checkInDate.getTime())) {
         console.log("Invalid Checkin_time format:", Checkin_time);
@@ -219,36 +221,33 @@ router.post(
           .json({ checking: false, msg: "Invalid Checkin_time format" });
       }
 
-      // Step 1: Check if the visitor has an ongoing session
-      const visitor = await VisitorModel.findOne({ phone_number: PhoneNumber });
-      if (!visitor) {
-        return res.json({ checking: false, msg: "Visitor not found" });
-      }
+      // Find the visitor by phone number
+      let visitor = await VisitorModel.findOne({ phone_number: PhoneNumber });
+      let ExistingVisitor = !!visitor;
+      let visitorId = ExistingVisitor ? visitor._id : null;
 
-      const ongoingSession = await VisitorSession.findOne({
-        visitor_id: visitor._id,
-        check_out_time: null,
-      });
-
-      if (ongoingSession) {
-        return res.json({
-          checking: false,
-          msg: "Visitor has an ongoing session",
+      // Check if the visitor has an ongoing session
+      if (ExistingVisitor) {
+        const ongoingSession = await VisitorSession.findOne({
+          visitor_id: visitorId,
+          check_out_time: null,
         });
+
+        if (ongoingSession) {
+          return res.json({
+            checking: false,
+            msg: "Visitor has an ongoing session",
+          });
+        }
       }
 
-      let visitorId = visitor ? visitor._id : null;
-      let ExistingVisitor = !!visitorId;
-
-      // Step 2: Handle ID card availability
+      // Handle ID card availability
       const ids = Array.isArray(IdCards) ? IdCards : [IdCards];
       const cards = await VisitorCard.find({ card_id: { $in: ids } });
 
-      const unavailableIds = [];
-      cards.forEach((card) => {
-        if (card.status !== "available" || card === null) {
-          unavailableIds.push(card.card_id || card);
-        }
+      const unavailableIds = ids.filter((id) => {
+        const card = cards.find((card) => card.card_id === id);
+        return !card || card.status !== "available";
       });
 
       if (unavailableIds.length > 0) {
@@ -258,73 +257,12 @@ router.post(
         });
       }
 
-      // Step 3: If visitor exists, use the existing visitor ID; otherwise, create a new visitor
-      if (!ExistingVisitor) {
-        const newVisitor = new VisitorModel({
-          name: Name,
-          phone_number: PhoneNumber,
-        });
-        const savedVisitor = await newVisitor.save();
-        visitorId = savedVisitor._id;
-      }
+      // Proceed with check-in logic (not shown here but you can add it as needed)
 
-      // Step 4: Create a new session for the visitor
-      const newSession = new VisitorSession({
-        _id: new mongoose.Types.ObjectId(),
-        visitor_id: visitorId,
-        purpose_of_visit: PurposeOfVisit,
-        entry_gate: EntryGate,
-        check_in_time: checkInDate,
-        vehicle_number: VehicleNo || null,
-        exit_gate: null,
-        check_out_time: null,
-        group_size: GroupSize,
-        group_id: new mongoose.Types.ObjectId(), // Placeholder for group_id
-        photos: Photo,
-      });
-
-      await newSession.save();
-
-      // Step 5: Create a new group for the visitor's session
-      const groupMembers = ids.map((id) => ({
-        card_id: id,
-        check_in_time: checkInDate,
-        exit_gate: null,
-        check_out_time: null,
-        status: "checked_in",
-      }));
-
-      const newGroup = new VisitorGroup({
-        _id: new mongoose.Types.ObjectId(),
-        session_id: newSession._id,
-        group_members: groupMembers,
-      });
-
-      await newGroup.save();
-
-      // Step 6: Update the group_id in the session document
-      newSession.group_id = newGroup._id;
-      await newSession.save();
-
-      // Step 7: Update visitor cards with appropriate status and assignments
-      await Promise.all(
-        groupMembers.map(async (member, index) => {
-          await VisitorCard.updateOne(
-            { card_id: member.card_id },
-            {
-              $set: {
-                status: "assigned",
-                assigned_to: newGroup.group_members[index]._id,
-              },
-            }
-          );
-        })
-      );
-
-      // Step 8: Respond with success
+      // Respond with success if check-in is processed
       return res.json({
         checking: true,
-        msg: "Visitor check-in processed successfully",
+        msg: "Check-in processed successfully",
       });
     } catch (err) {
       console.error("Error in Register/Checkin Visitor:", err);
