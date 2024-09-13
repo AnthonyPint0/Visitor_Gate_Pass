@@ -18,6 +18,7 @@ const API_URL = API_BASE_URL;
 
 const Register_Guest = ({ handleClose, userINFO }) => {
   const navigator = useNavigate();
+  const [shouldReload, setShouldReload] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -172,7 +173,7 @@ const Register_Guest = ({ handleClose, userINFO }) => {
         });
         setErrors({ email: "", mobileNo: "" });
         setTimeout(() => {
-          navigator("/pre_approved_guest");
+          navigator("/");
         }, 3000);
       } else {
         notifyErr("Failed to submit guest pre-approval.");

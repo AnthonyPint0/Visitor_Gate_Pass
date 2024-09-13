@@ -22,6 +22,7 @@ const GuestDataGrid = ({ userINFO }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [rows, setRows] = useState([]);
   const API_URL = API_BASE_URL;
+  const [shouldReload, setShouldReload] = useState(false);
   const navigator = useNavigate();
 
   useEffect(() => {
@@ -72,7 +73,7 @@ const GuestDataGrid = ({ userINFO }) => {
     };
 
     fetchGuestHistory();
-  }, []);
+  }, [shouldReload]);
 
   const notifyErr = (text) =>
     toast.error(`${text}`, {
@@ -182,7 +183,7 @@ const GuestDataGrid = ({ userINFO }) => {
   const handleCancelClick = (id) => {
     // Restore row data from backup if implemented
     toggleEditMode(id);
-    navigator("/pre_approved_guest");
+    setShouldReload((s) => !s);
   };
 
   const handleCellEditCommit = useCallback(

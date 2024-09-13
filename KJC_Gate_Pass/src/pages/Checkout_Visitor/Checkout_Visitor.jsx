@@ -33,6 +33,7 @@ function Checkout_Visitor() {
   const [selectedId, setSelectedId] = useState(""); //for selecting an id from dropdown
   const [visitorData, setVisitorData] = useState(null); // State for visitor data
   const [selectedExit, setSelectedExit] = useState("Gate 1"); // Default value for exit gate
+  const [shouldReload, setShouldReload] = useState(false);
   const API_URL = API_BASE_URL;
   const navigator = useNavigate();
 
@@ -111,7 +112,7 @@ function Checkout_Visitor() {
   };
   useEffect(() => {
     fetchCheckedInIds(""); // Fetch all IDs initially
-  }, []);
+  }, [shouldReload]);
 
   const handleIdCardChange = (inputValue) => {
     setSelectedId(inputValue.value);
@@ -261,7 +262,7 @@ function Checkout_Visitor() {
         notifySuccess("Checkout completed successfully.");
         handleClear();
         setTimeout(() => {
-          navigator("/checkout_visitor");
+          setShouldReload((s) => !s);
         }, 1000);
       } else {
         notifyErr("Failed to complete checkout.");
@@ -596,7 +597,7 @@ function Checkout_Visitor() {
                       }}
                       onClick={() => {
                         handleClear();
-                        navigator("/checkout_visitor");
+                        navigator("/dashboard");
                       }}
                     >
                       Cancel

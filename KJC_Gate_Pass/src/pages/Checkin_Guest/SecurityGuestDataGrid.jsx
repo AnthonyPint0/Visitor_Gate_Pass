@@ -25,6 +25,7 @@ const SecurityGuestDataGrid = () => {
   const [guestDetails, setGuestDetails] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const API_URL = API_BASE_URL;
+  const [shouldReload, setShouldReload] = useState(false);
   const navigator = useNavigate();
 
   const handleClose = () => {
@@ -93,7 +94,7 @@ const SecurityGuestDataGrid = () => {
     };
 
     fetchGuestHistory();
-  }, [API_URL]);
+  }, [API_URL, shouldReload]);
 
   const handleCheckinGuest = async (passId) => {
     try {
@@ -124,7 +125,7 @@ const SecurityGuestDataGrid = () => {
         // Close the guest details dialog
         handleClose();
         setTimeout(() => {
-          navigator("/checkin_guest");
+          setShouldReload((s) => !s);
         }, 2000);
         // Show success message
         notifySuccess("Guest Checked-In Successfully!");
