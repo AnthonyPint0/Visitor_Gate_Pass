@@ -73,7 +73,7 @@ const GuestDataGrid = ({ userINFO }) => {
     };
 
     fetchGuestHistory();
-  }, [shouldReload]);
+  }, []);
 
   const notifyErr = (text) =>
     toast.error(`${text}`, {
