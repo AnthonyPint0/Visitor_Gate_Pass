@@ -8,8 +8,8 @@ import {
   FormControlLabel,
   Box,
   Container,
+  Stack,
 } from "@mui/material";
-import Stack from "@mui/material/Stack";
 import EmailIcon from "@mui/icons-material/Email";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
@@ -22,16 +22,14 @@ import { useEffect, useState, useCallback } from "react";
 import { API_BASE_URL, formatDateWithPadding } from "../../library/helper";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import dayjs from "dayjs";
-import { useNavigate } from "react-router-dom";
 
 const GuestDataGrid = ({ userINFO }) => {
-  const [editMode, setEditMode] = useState(false); // Single state for canEdit
+  const [editMode, setEditMode] = useState(false);
   const [filterDate, setFilterDate] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [rows, setRows] = useState([]);
+  const [originalRows, setOriginalRows] = useState([]);
   const API_URL = API_BASE_URL;
-  const [shouldReload, setShouldReload] = useState(false);
-  const navigator = useNavigate();
 
   useEffect(() => {
     const fetchGuestHistory = async () => {
@@ -42,7 +40,7 @@ const GuestDataGrid = ({ userINFO }) => {
           return;
         }
 
-        const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload safely
+        const payload = JSON.parse(atob(token.split(".")[1]));
         const userEmail = payload.email;
         if (!userEmail) {
           console.error("User email not found in token payload");
@@ -51,10 +49,10 @@ const GuestDataGrid = ({ userINFO }) => {
 
         const response = await axios.get(`${API_URL}/guest/guest-history`, {
           params: {
-            HODEmail: userEmail, // Send HODEmail as query param
+            HODEmail: userEmail,
           },
           headers: {
-            Authorization: `Bearer ${token}`, // Ensure Bearer token is correctly formatted
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -62,14 +60,13 @@ const GuestDataGrid = ({ userINFO }) => {
           ? response.data
           : [response.data];
 
-        // Map and format guests data
         const formattedGuests = guests.map((guest) => ({
           id: guest._id,
           passId: guest.passId,
           name: guest.name || "",
           mobileNo: guest.mobile || "",
           date: guest.eventDateTime
-            ? dayjs(guest.eventDateTime).format("YYYY-MM-DD") // Format date here
+            ? dayjs(guest.eventDateTime).format("YYYY-MM-DD")
             : "",
           email: guest.email || "",
           event: guest.event || "",
@@ -80,16 +77,17 @@ const GuestDataGrid = ({ userINFO }) => {
         }));
 
         setRows(formattedGuests);
+        setOriginalRows(formattedGuests);
       } catch (error) {
         console.error("Error fetching guest history data:", error);
       }
     };
 
     fetchGuestHistory();
-  }, [API_URL, shouldReload]); // Add shouldReload to dependencies to refetch on updates
+  }, [API_URL]);
 
   const notifyErr = (text) =>
-    toast.error(`${text}`, {
+    toast.error(text, {
       position: "top-center",
       autoClose: 2000,
       hideProgressBar: false,
@@ -103,7 +101,7 @@ const GuestDataGrid = ({ userINFO }) => {
     });
 
   const notifySuccess = (text) =>
-    toast.success(`${text}`, {
+    toast.success(text, {
       position: "top-center",
       autoClose: 1500,
       hideProgressBar: false,
@@ -126,17 +124,13 @@ const GuestDataGrid = ({ userINFO }) => {
 
   const handleDeleteClick = async (id) => {
     const rowToUpdate = rows.find((row) => row.id === id);
-
     const confirmDelete = window.confirm(
       `Are you sure you want to delete the Guest with name: ${rowToUpdate?.name}?`
     );
-    if (!confirmDelete) {
-      return;
-    }
+    if (!confirmDelete) return;
 
     try {
       const token = localStorage.getItem("token");
-
       if (!token) {
         console.error("No token found");
         notifyErr("Authentication token missing. Please log in again.");
@@ -150,7 +144,7 @@ const GuestDataGrid = ({ userINFO }) => {
       });
 
       notifySuccess(`Deleted Guest: ${rowToUpdate?.name}`);
-      setShouldReload((prev) => !prev); // Toggle reload flag to trigger refetch
+      setRows((prevRows) => prevRows.filter((row) => row.id !== id));
     } catch (error) {
       console.error("Error deleting row:", error);
       notifyErr("Failed to delete row. Please try again later.");
@@ -159,71 +153,62 @@ const GuestDataGrid = ({ userINFO }) => {
 
   const handleSaveClick = async (id) => {
     const rowToUpdate = rows.find((row) => row.id === id);
+    if (!rowToUpdate) {
+      console.error("Row not found for ID:", id);
+      notifyErr("Row data not found.");
+      return;
+    }
 
     // Validate mobile number format
     const phoneNumberPattern = /^\d{10}$/;
-    if (!phoneNumberPattern.test(rowToUpdate?.mobileNo)) {
+    if (!phoneNumberPattern.test(rowToUpdate.mobileNo)) {
       notifyErr("Invalid phone number. Please ensure it is exactly 10 digits.");
-      return;
-    }
-
-    if (!rowToUpdate) {
-      console.error("Row not found for ID:", id);
-      return;
-    }
-
-    if (rowToUpdate.isVisited && rowToUpdate.checkedInTime) {
-      notifyErr(
-        `Guest has already entered the campus on ${formatDateWithPadding(
-          rowToUpdate.checkedInTime
-        )}`
-      );
       return;
     }
 
     const confirmSave = window.confirm(
       `Are you sure you want to save changes and resend the email for ${rowToUpdate.name}?`
     );
-
-    if (!confirmSave) {
-      return;
-    }
+    if (!confirmSave) return;
 
     try {
       const token = localStorage.getItem("token");
-
       if (!token) {
         console.error("No token found");
+        notifyErr("Authentication token missing. Please log in again.");
         return;
       }
 
-      await axios.put(
-        `${API_URL}/guest/update/${id}`,
-        {
-          rowToUpdate,
-          userInfo: userINFO,
+      const payload = {
+        name: rowToUpdate.name,
+        mobileNo: rowToUpdate.mobileNo,
+        date: rowToUpdate.date,
+        email: rowToUpdate.email,
+        event: rowToUpdate.event,
+        invitedAs: rowToUpdate.invitedAs,
+        isVisited: rowToUpdate.isVisited,
+        checkedInTime: rowToUpdate.checkedInTime,
+      };
+
+      await axios.put(`${API_URL}/guest/update/${id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      });
 
       notifySuccess("Update complete; email successfully resent!");
-      setShouldReload((prev) => !prev); // Toggle reload flag to trigger refetch
     } catch (error) {
       console.error("Error saving row data:", error);
       notifyErr("Failed to save changes. Please try again later.");
     }
   };
 
-  const handleCancelClick = (id) => {
-    setShouldReload((prev) => !prev); // Toggle reload flag to trigger refetch
+  const handleCancelClick = () => {
+    setRows(originalRows);
   };
 
   const handleCellEditCommit = useCallback(
-    (params) => {
+    async (params) => {
       const updatedRows = rows.map((row) => {
         if (row.id === params.id) {
           return { ...row, [params.field]: params.value };
@@ -231,6 +216,27 @@ const GuestDataGrid = ({ userINFO }) => {
         return row;
       });
       setRows(updatedRows);
+
+      // try {
+      //   const token = localStorage.getItem("token");
+      //   if (!token) {
+      //     console.error("No token found");
+      //     return;
+      //   }
+
+      //   await axios.put(
+      //     `${API_URL}/guest/update/${params.id}`,
+      //     { [params.field]: params.value },
+      //     {
+      //       headers: {
+      //         Authorization: `Bearer ${token}`,
+      //       },
+      //     }
+      //   );
+      // } catch (error) {
+      //   console.error("Error saving row data:", error);
+      //   notifyErr("Failed to save changes. Please try again later.");
+      // }
     },
     [rows]
   );
@@ -244,6 +250,7 @@ const GuestDataGrid = ({ userINFO }) => {
       );
       return;
     }
+
     if (
       window.confirm(
         `Are you sure you want to send an invitation to: ${row.email}`
@@ -251,14 +258,12 @@ const GuestDataGrid = ({ userINFO }) => {
     ) {
       try {
         const token = localStorage.getItem("token");
-
         if (!token) {
           console.error("Couldn't get token!");
           return;
         }
 
         const payload = JSON.parse(atob(token.split(".")[1]));
-
         const user = {
           name: payload.name,
           email: payload.email,
@@ -276,7 +281,6 @@ const GuestDataGrid = ({ userINFO }) => {
         );
 
         notifySuccess(response.data.message);
-        setShouldReload((prev) => !prev); // Toggle reload flag to trigger refetch
       } catch (error) {
         console.error("Error resending email:", error);
         notifyErr("Failed to resend email. Please try again later.");
@@ -288,7 +292,7 @@ const GuestDataGrid = ({ userINFO }) => {
     handleCellEditCommit({
       id: params.id,
       field: "date",
-      value: date ? dayjs(date).format("YYYY-MM-DD") : null, // Ensure date is in 'YYYY-MM-DD' format
+      value: date ? dayjs(date).format("YYYY-MM-DD") : null,
     });
   };
 
@@ -301,30 +305,15 @@ const GuestDataGrid = ({ userINFO }) => {
   );
 
   const columns = [
-    {
-      field: "passId",
-      headerName: "Pass Id",
-      width: 80,
-      editable: editMode, // Use editMode state for cell editability
-    },
-    {
-      field: "name",
-      headerName: "Name",
-      width: 150,
-      editable: editMode, // Use editMode state for cell editability
-    },
+    { field: "passId", headerName: "Pass Id", width: 80, editable: editMode },
+    { field: "name", headerName: "Name", width: 150, editable: editMode },
     {
       field: "mobileNo",
       headerName: "Mobile No",
       width: 130,
-      editable: editMode, // Use editMode state for cell editability
+      editable: editMode,
     },
-    {
-      field: "email",
-      headerName: "Email",
-      width: 200,
-      editable: editMode, // Use editMode state for cell editability
-    },
+    { field: "email", headerName: "Email", width: 200, editable: editMode },
     {
       field: "date",
       headerName: "Event Date",
@@ -334,9 +323,9 @@ const GuestDataGrid = ({ userINFO }) => {
         editMode ? (
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
-              value={params.value ? dayjs(params.value) : null} // Convert to Dayjs object
-              onChange={(date) => handleDateChange(params, date)} // Pass both params and date
-              slotProps={{ textField: { variant: "outlined" } }} // Updated slotProps for MUI X v6
+              value={params.value ? dayjs(params.value) : null}
+              onChange={(date) => handleDateChange(params, date)}
+              slotProps={{ textField: { variant: "outlined" } }}
             />
           </LocalizationProvider>
         ) : (
@@ -346,13 +335,13 @@ const GuestDataGrid = ({ userINFO }) => {
     {
       field: "invitedAs",
       headerName: "Invited As",
-      width: 150,
-      editable: editMode, // Use editMode state for cell editability
+      width: 110,
+      editable: editMode,
     },
     {
       field: "isVisited",
       headerName: "Visited",
-      width: 110,
+      width: 100,
       editable: false,
       renderCell: (params) => (
         <Badge
@@ -380,7 +369,7 @@ const GuestDataGrid = ({ userINFO }) => {
             <IconButton onClick={() => handleSaveClick(id)} color="success">
               <SaveIcon />
             </IconButton>
-            <IconButton onClick={() => handleCancelClick(id)} color="error">
+            <IconButton onClick={handleCancelClick} color="error">
               <CancelIcon />
             </IconButton>
             <IconButton
@@ -404,7 +393,7 @@ const GuestDataGrid = ({ userINFO }) => {
             label="Filter by Date"
             value={filterDate}
             onChange={handleDateFilterChange}
-            slotProps={{ textField: { variant: "outlined" } }} // Updated slotProps for MUI X v6
+            slotProps={{ textField: { variant: "outlined" } }}
           />
         </LocalizationProvider>
         <TextField
