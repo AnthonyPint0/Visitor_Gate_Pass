@@ -14,6 +14,7 @@ import axios from "axios";
 import { useEffect, useState, useCallback } from "react";
 import { API_BASE_URL, formatDateWithPadding } from "../../library/helper";
 import { ToastContainer, toast, Slide } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const GuestDataGrid = ({ userINFO }) => {
   const [editMode, setEditMode] = useState({}); // Track which rows are in edit mode
@@ -21,6 +22,7 @@ const GuestDataGrid = ({ userINFO }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [rows, setRows] = useState([]);
   const API_URL = API_BASE_URL;
+  const navigator = useNavigate();
 
   useEffect(() => {
     const fetchGuestHistory = async () => {
@@ -180,7 +182,7 @@ const GuestDataGrid = ({ userINFO }) => {
   const handleCancelClick = (id) => {
     // Restore row data from backup if implemented
     toggleEditMode(id);
-    window.location.reload();
+    navigator("/pre_approved_guest");
   };
 
   const handleCellEditCommit = useCallback(

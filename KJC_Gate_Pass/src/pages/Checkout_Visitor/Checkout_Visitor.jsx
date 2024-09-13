@@ -34,7 +34,7 @@ function Checkout_Visitor() {
   const [visitorData, setVisitorData] = useState(null); // State for visitor data
   const [selectedExit, setSelectedExit] = useState("Gate 1"); // Default value for exit gate
   const API_URL = API_BASE_URL;
-  const navigate = useNavigate();
+  const navigator = useNavigate();
 
   useEffect(() => {
     document.title = `Checkout_Visitor: ${width} x ${height}`;
@@ -261,7 +261,7 @@ function Checkout_Visitor() {
         notifySuccess("Checkout completed successfully.");
         handleClear();
         setTimeout(() => {
-          window.location.reload();
+          navigator("/checkout_visitor");
         }, 1000);
       } else {
         notifyErr("Failed to complete checkout.");
@@ -596,7 +596,7 @@ function Checkout_Visitor() {
                       }}
                       onClick={() => {
                         handleClear();
-                        navigate("/dashboard");
+                        navigator("/checkout_visitor");
                       }}
                     >
                       Cancel

@@ -12,10 +12,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { ToastContainer, toast, Slide } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = API_BASE_URL;
 
 const Register_Guest = ({ handleClose, userINFO }) => {
+  const navigator = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -170,7 +172,7 @@ const Register_Guest = ({ handleClose, userINFO }) => {
         });
         setErrors({ email: "", mobileNo: "" });
         setTimeout(() => {
-          window.location.reload();
+          navigator("/pre_approved_guest");
         }, 3000);
       } else {
         notifyErr("Failed to submit guest pre-approval.");
