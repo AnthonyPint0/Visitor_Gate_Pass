@@ -1,13 +1,19 @@
 import * as React from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { Badge, IconButton, TextField } from "@mui/material";
+import {
+  Badge,
+  IconButton,
+  TextField,
+  Switch,
+  FormControlLabel,
+  Box,
+  Container,
+} from "@mui/material";
 import Stack from "@mui/material/Stack";
 import EmailIcon from "@mui/icons-material/Email";
-import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
-import "./custom-toastify.css"; // Your custom CSS file
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -15,11 +21,11 @@ import axios from "axios";
 import { useEffect, useState, useCallback } from "react";
 import { API_BASE_URL, formatDateWithPadding } from "../../library/helper";
 import { ToastContainer, toast, Slide } from "react-toastify";
+import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-import { setTime } from "react-datepicker/dist/date_utils";
 
 const GuestDataGrid = ({ userINFO }) => {
-  const [editMode, setEditMode] = useState({}); // Track which rows are in edit mode
+  const [editMode, setEditMode] = useState(false); // Single state for canEdit
   const [filterDate, setFilterDate] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [rows, setRows] = useState([]);
@@ -31,10 +37,15 @@ const GuestDataGrid = ({ userINFO }) => {
     const fetchGuestHistory = async () => {
       try {
         const token = localStorage.getItem("token");
-        const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
-        const userEmail = payload.email;
         if (!token) {
           console.error("No token found");
+          return;
+        }
+
+        const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload safely
+        const userEmail = payload.email;
+        if (!userEmail) {
+          console.error("User email not found in token payload");
           return;
         }
 
@@ -58,7 +69,7 @@ const GuestDataGrid = ({ userINFO }) => {
           name: guest.name || "",
           mobileNo: guest.mobile || "",
           date: guest.eventDateTime
-            ? new Date(guest.eventDateTime).toISOString().split("T")[0]
+            ? dayjs(guest.eventDateTime).format("YYYY-MM-DD") // Format date here
             : "",
           email: guest.email || "",
           event: guest.event || "",
@@ -75,7 +86,7 @@ const GuestDataGrid = ({ userINFO }) => {
     };
 
     fetchGuestHistory();
-  }, []);
+  }, [API_URL, shouldReload]); // Add shouldReload to dependencies to refetch on updates
 
   const notifyErr = (text) =>
     toast.error(`${text}`, {
@@ -113,21 +124,14 @@ const GuestDataGrid = ({ userINFO }) => {
     setFilterDate(date);
   };
 
-  const toggleEditMode = (id) => {
-    setEditMode((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
   const handleDeleteClick = async (id) => {
-    const rowToUpdate = rows.find((row) => row.id === id); // Assuming this is the MongoDB _id
+    const rowToUpdate = rows.find((row) => row.id === id);
 
     const confirmDelete = window.confirm(
-      `Are you sure you want to delete this with the Guestname: ${rowToUpdate.name}?`
+      `Are you sure you want to delete the Guest with name: ${rowToUpdate?.name}?`
     );
     if (!confirmDelete) {
-      return; // Exit if the user cancels
+      return;
     }
 
     try {
@@ -139,34 +143,26 @@ const GuestDataGrid = ({ userINFO }) => {
         return;
       }
 
-      // Send the delete request to your API using MongoDB _id
       await axios.delete(`${API_URL}/guest/delete/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      notifySuccess(`Deleted Guest: ${rowToUpdate.name}`);
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+      notifySuccess(`Deleted Guest: ${rowToUpdate?.name}`);
+      setShouldReload((prev) => !prev); // Toggle reload flag to trigger refetch
     } catch (error) {
       console.error("Error deleting row:", error);
       notifyErr("Failed to delete row. Please try again later.");
     }
-
-    // Exit edit mode
-    toggleEditMode(id);
   };
 
   const handleSaveClick = async (id) => {
-    // Find the row that is being edited
-    const rowToUpdate = rows.find((row) => row.id === id); // Assuming this is the MongoDB _id
-    console.log(rowToUpdate);
+    const rowToUpdate = rows.find((row) => row.id === id);
 
     // Validate mobile number format
-    const phoneNumberPattern = /^\d{10}$/; // Regular expression for exactly 10 digits
-    if (!phoneNumberPattern.test(rowToUpdate.mobileNo)) {
+    const phoneNumberPattern = /^\d{10}$/;
+    if (!phoneNumberPattern.test(rowToUpdate?.mobileNo)) {
       notifyErr("Invalid phone number. Please ensure it is exactly 10 digits.");
       return;
     }
@@ -185,13 +181,12 @@ const GuestDataGrid = ({ userINFO }) => {
       return;
     }
 
-    // Prompt the user for confirmation
     const confirmSave = window.confirm(
       `Are you sure you want to save changes and resend the email for ${rowToUpdate.name}?`
     );
 
     if (!confirmSave) {
-      return; // Exit if the user cancels
+      return;
     }
 
     try {
@@ -202,14 +197,11 @@ const GuestDataGrid = ({ userINFO }) => {
         return;
       }
 
-      console.log(userINFO);
-
-      // Send the update request to your API using MongoDB _id
       await axios.put(
         `${API_URL}/guest/update/${id}`,
         {
           rowToUpdate,
-          userInfo: userINFO, // Assuming userINFO is available in your scope
+          userInfo: userINFO,
         },
         {
           headers: {
@@ -219,19 +211,15 @@ const GuestDataGrid = ({ userINFO }) => {
       );
 
       notifySuccess("Update complete; email successfully resent!");
+      setShouldReload((prev) => !prev); // Toggle reload flag to trigger refetch
     } catch (error) {
       console.error("Error saving row data:", error);
       notifyErr("Failed to save changes. Please try again later.");
     }
-
-    // Exit edit mode
-    toggleEditMode(id);
   };
 
   const handleCancelClick = (id) => {
-    // Restore row data from backup if implemented
-    toggleEditMode(id);
-    window.location.reload();
+    setShouldReload((prev) => !prev); // Toggle reload flag to trigger refetch
   };
 
   const handleCellEditCommit = useCallback(
@@ -262,17 +250,15 @@ const GuestDataGrid = ({ userINFO }) => {
       )
     ) {
       try {
-        const token = localStorage.getItem("token"); // Ensure token is handled securely
+        const token = localStorage.getItem("token");
 
         if (!token) {
           console.error("Couldn't get token!");
           return;
         }
 
-        // Decode token payload
         const payload = JSON.parse(atob(token.split(".")[1]));
 
-        // Set user state
         const user = {
           name: payload.name,
           email: payload.email,
@@ -284,352 +270,172 @@ const GuestDataGrid = ({ userINFO }) => {
           { userInfo: user },
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Include token in headers
+              Authorization: `Bearer ${token}`,
             },
           }
         );
 
-        notifySuccess(response.data.message); // Notify user of success
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+        notifySuccess(response.data.message);
+        setShouldReload((prev) => !prev); // Toggle reload flag to trigger refetch
       } catch (error) {
         console.error("Error resending email:", error);
-        notifyErr("Failed to resend email. Please try again later."); // Notify user of failure
+        notifyErr("Failed to resend email. Please try again later.");
       }
     }
   };
 
-  const handleChange = (e) => {
-    e.stopPropagation();
-
-    const value = e.target.value;
-    // Remove non-digit characters
-    const numericValue = value.replace(/\D/g, "");
-
-    // Restrict to 10 digits
-    if (numericValue.length <= 10) {
-      handleCellEditCommit({
-        id: params.id,
-        field: "mobileNo",
-        value: numericValue,
-      });
-    }
-  };
-
-  const handleDateChange = (newValue) => {
+  const handleDateChange = (params, date) => {
     handleCellEditCommit({
       id: params.id,
       field: "date",
-      value: newValue,
+      value: date ? dayjs(date).format("YYYY-MM-DD") : null, // Ensure date is in 'YYYY-MM-DD' format
     });
   };
+
+  const filteredRows = rows.filter(
+    (row) =>
+      (searchTerm === "" ||
+        row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.passId.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (!filterDate || row.date === dayjs(filterDate).format("YYYY-MM-DD"))
+  );
 
   const columns = [
     {
       field: "passId",
       headerName: "Pass Id",
-      width: 100,
-      type: "number",
-      sortable: true,
-      renderCell: (params) => {
-        const formattedValue = params.value
-          ? params.value.toString().padStart(4, "0")
-          : "N/A";
-        return editMode[params.id] ? (
-          <input
-            value={formattedValue}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "passId",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{formattedValue}</div>
-        );
-      },
+      width: 80,
+      editable: editMode, // Use editMode state for cell editability
     },
     {
       field: "name",
       headerName: "Name",
       width: 150,
-      sortable: true,
-
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "name",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
+      editable: editMode, // Use editMode state for cell editability
     },
     {
       field: "mobileNo",
       headerName: "Mobile No",
-      width: 100,
-      sortable: false,
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            type="text"
-            value={params.value}
-            onChange={handleChange}
-            maxLength={10} // This is just a visual cue; actual validation is in handleChange
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
-    },
-    {
-      field: "date",
-      headerName: "Date",
-      width: 100,
-      sortable: true,
-
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <DatePicker
-            label="Expected Date"
-            value={params.value ? new Date(params.value) : null} // Ensure value is in Date format
-            onChange={(newValue) => {
-              handleDateChange(newValue);
-            }}
-            renderInput={(params) => <TextField {...params} />}
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
+      width: 130,
+      editable: editMode, // Use editMode state for cell editability
     },
     {
       field: "email",
       headerName: "Email",
       width: 200,
-      sortable: true,
-
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "email",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
+      editable: editMode, // Use editMode state for cell editability
     },
     {
-      field: "event",
-      headerName: "Event",
-      width: 150,
-      sortable: true,
+      field: "date",
+      headerName: "Event Date",
+      width: 130,
+      editable: false,
       renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "event",
-                value: e.target.value,
-              });
-            }}
-          />
+        editMode ? (
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              value={params.value ? dayjs(params.value) : null} // Convert to Dayjs object
+              onChange={(date) => handleDateChange(params, date)} // Pass both params and date
+              slotProps={{ textField: { variant: "outlined" } }} // Updated slotProps for MUI X v6
+            />
+          </LocalizationProvider>
         ) : (
-          <div>{params.value}</div>
+          params.value
         ),
     },
     {
       field: "invitedAs",
       headerName: "Invited As",
-      width: 105,
-      sortable: true,
-
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "invitedAs",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
+      width: 150,
+      editable: editMode, // Use editMode state for cell editability
     },
     {
       field: "isVisited",
-      headerName: "Has Visited?",
-      width: 105,
-      sortable: true,
-
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            readOnly
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "isVisited",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value == false ? "No" : "Yes"}</div>
-        ),
+      headerName: "Visited",
+      width: 110,
+      editable: false,
+      renderCell: (params) => (
+        <Badge
+          badgeContent={params.row.isVisited ? "Visited" : "Not Visited"}
+          color={params.row.isVisited ? "success" : "error"}
+          sx={{ marginLeft: 4 }}
+        />
+      ),
     },
     {
-      field: "Actions",
+      field: "actions",
       headerName: "Actions",
-      width: 150,
-      renderCell: (params) => (
-        <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-          {editMode[params.id] ? (
-            <>
-              <IconButton
-                size="small"
-                onClick={() => handleSaveClick(params.id)}
-              >
-                <SaveIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={() => handleCancelClick(params.id)}
-              >
-                <CancelIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={() => handleDeleteClick(params.id)}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </>
-          ) : (
-            <IconButton size="small" onClick={() => toggleEditMode(params.id)}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-          )}
-          <IconButton
-            size="small"
-            onClick={() => handleResendEmail(params.row)}
-          >
-            <Badge
-              badgeContent={
-                params.row.noOfemailSent ? params.row.noOfemailSent : 0
-              } // Use 0 as a fallback value
-              color="error"
-              sx={{
-                "& .MuiBadge-badge": {
-                  minWidth: "16px",
-                  height: "16px",
-                  fontSize: "10px", // Adjust the font size
-                },
-              }}
+      width: 200,
+      renderCell: (params) => {
+        const { id } = params.row;
+        return (
+          <Stack direction="row" spacing={1}>
+            <IconButton
+              onClick={() => handleResendEmail(params.row)}
+              color="primary"
+              disabled={params.row.isVisited}
             >
-              <EmailIcon fontSize="small" />
-            </Badge>
-          </IconButton>
-        </Stack>
-      ),
-      sortable: false,
-      filterable: false,
+              <EmailIcon />
+            </IconButton>
+            <IconButton onClick={() => handleSaveClick(id)} color="success">
+              <SaveIcon />
+            </IconButton>
+            <IconButton onClick={() => handleCancelClick(id)} color="error">
+              <CancelIcon />
+            </IconButton>
+            <IconButton
+              onClick={() => handleDeleteClick(id)}
+              color="error"
+              disabled={params.row.isVisited}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Stack>
+        );
+      },
     },
   ];
 
   return (
-    <div
-      style={{
-        height: "100%",
-        width: "100%",
-        backgroundColor: "#f2f9ff",
-      }}
-    >
-      <div
-        className="search-filter-txt"
-        style={{ display: "flex", justifyContent: "flex-end", padding: "16px" }}
-      >
-        <Stack direction="row" spacing={2}>
-          <TextField
-            sx={{ backgroundColor: "#ffffff" }}
-            id="search-filter"
-            label="Search by name or Pass Id"
-            variant="outlined"
-            value={searchTerm}
-            onChange={handleOnChange}
+    <Container>
+      <Box sx={{ height: "fit-content", width: "100%", paddingBottom: "40px" }}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            label="Filter by Date"
+            value={filterDate}
+            onChange={handleDateFilterChange}
+            slotProps={{ textField: { variant: "outlined" } }} // Updated slotProps for MUI X v6
           />
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              sx={{ backgroundColor: "#ffffff" }}
-              label="Filter by Date"
-              value={filterDate}
-              onChange={handleDateFilterChange}
-              slots={{
-                textField: (params) => <TextField {...params} />,
-              }}
+        </LocalizationProvider>
+        <TextField
+          label="Search"
+          variant="outlined"
+          value={searchTerm}
+          onChange={handleOnChange}
+          fullWidth
+          margin="normal"
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={editMode}
+              onChange={() => setEditMode((prev) => !prev)}
             />
-          </LocalizationProvider>
-        </Stack>
-      </div>
-      <DataGrid
-        sx={{
-          border: "1px solid white",
-          borderRadius: "15px",
-          boxShadow: "2",
-          backgroundColor: "#ffffff",
-        }}
-        rows={rows.filter((row) => {
-          const matchesSearchTerm =
-            row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            row.passId.toString().includes(searchTerm);
-          const matchesDateFilter = filterDate
-            ? new Date(row.date).toDateString() ===
-              new Date(filterDate).toDateString()
-            : true;
-          return matchesSearchTerm && matchesDateFilter;
-        })}
-        columns={columns}
-        initialState={{
-          pagination: { paginationModel: { pageSize: 10 } },
-        }}
-        pageSizeOptions={[10, 20, 50]}
-        components={{
-          Toolbar: GridToolbar,
-        }}
-        disableSelectionOnClick
-        disableColumnMenu
-        onCellEditCommit={handleCellEditCommit} // Handle cell edit commits
-        style={{ height: 650, width: "100%" }}
-      />
-      <ToastContainer />
-    </div>
+          }
+          label="Enable Edit Mode"
+        />
+        <DataGrid
+          rows={filteredRows}
+          columns={columns}
+          pageSize={10}
+          rowsPerPageOptions={[10]}
+          disableSelectionOnClick
+          onCellEditCommit={handleCellEditCommit}
+          components={{ Toolbar: GridToolbar }}
+        />
+        <ToastContainer />
+      </Box>
+    </Container>
   );
 };
 

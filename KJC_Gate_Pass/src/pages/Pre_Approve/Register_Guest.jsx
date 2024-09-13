@@ -70,20 +70,13 @@ const Register_Guest = ({ handleClose, userINFO }) => {
 
     if (id === "mobileNo") {
       // Remove non-numeric characters
-      const numericValue = value.replace(/[^0-9]/g, "");
+      const numericValue = value.replace(/[^0-9]/g, "").slice(0, 10); // Limit to 10 digits
 
       // Update form data
       setFormData((prevData) => ({
         ...prevData,
         [id]: numericValue,
       }));
-
-      // Validate the mobile number
-      if (numericValue.length === 0) {
-        notifyErr("Mobile number is required");
-      } else if (numericValue.length !== 10) {
-        notifyErr("Mobile number must be exactly 10 digits");
-      }
     } else if (id === "email") {
       setFormData((prevData) => ({
         ...prevData,

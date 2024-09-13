@@ -188,11 +188,6 @@ const deleteInvitation = async (req, res) => {
   try {
     const guestId = req.params.id;
 
-    // Validate if ID is a valid MongoDB ObjectId
-    if (!mongoose.Types.ObjectId.isValid(guestId)) {
-      return res.status(400).json({ error: "Invalid guest ID" });
-    }
-
     // Find and delete the guest by ID
     const result = await GuestModel.findByIdAndDelete(guestId);
 
