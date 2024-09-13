@@ -183,7 +183,7 @@ const GuestDataGrid = ({ userINFO }) => {
   const handleCancelClick = (id) => {
     // Restore row data from backup if implemented
     toggleEditMode(id);
-    setShouldReload((s) => !s);
+    window.location.reload();
   };
 
   const handleCellEditCommit = useCallback(

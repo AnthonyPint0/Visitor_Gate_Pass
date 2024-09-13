@@ -70,7 +70,7 @@ function Register_Visitor() {
         initialOptions.map((item) => ({ value: item, label: item }))
       );
     });
-  }, [shouldReload]);
+  }, []);
 
   useEffect(() => {
     const cardInputs = idCards.filter((val) => val);
@@ -581,7 +581,7 @@ function Register_Visitor() {
         notifySuccess(response.data.msg);
         handleClear();
         setTimeout(() => {
-          setShouldReload((s) => !s);
+          window.location.reload();
         }, 3000);
       } else {
         notifyErr(response.data.msg);

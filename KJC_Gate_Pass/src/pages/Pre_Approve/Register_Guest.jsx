@@ -173,7 +173,7 @@ const Register_Guest = ({ handleClose, userINFO }) => {
         });
         setErrors({ email: "", mobileNo: "" });
         setTimeout(() => {
-          navigator("/");
+          window.location.reload();
         }, 3000);
       } else {
         notifyErr("Failed to submit guest pre-approval.");

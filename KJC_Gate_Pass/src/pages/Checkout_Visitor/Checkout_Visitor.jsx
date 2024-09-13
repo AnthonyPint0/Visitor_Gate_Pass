@@ -112,7 +112,7 @@ function Checkout_Visitor() {
   };
   useEffect(() => {
     fetchCheckedInIds(""); // Fetch all IDs initially
-  }, [shouldReload]);
+  }, []);
 
   const handleIdCardChange = (inputValue) => {
     setSelectedId(inputValue.value);
@@ -262,7 +262,7 @@ function Checkout_Visitor() {
         notifySuccess("Checkout completed successfully.");
         handleClear();
         setTimeout(() => {
-          setShouldReload((s) => !s);
+          window.location.reload();
         }, 1000);
       } else {
         notifyErr("Failed to complete checkout.");
