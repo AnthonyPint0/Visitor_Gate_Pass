@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../library/helper.js";
 import CompleteSidebar from "../../components/SideBarNavi/CompleteSidebar.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
+import { Select, MenuItem } from "@mui/material";
 
 function Register_Visitor() {
   const { width, height } = useWindowSize();
@@ -50,6 +51,8 @@ function Register_Visitor() {
   const streamRef = useRef(null); // Reference to hold the media stream
   const API_URL = API_BASE_URL;
   const [shouldReload, setShouldReload] = useState(false);
+  const [devices, setDevices] = useState([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -329,28 +332,41 @@ function Register_Visitor() {
     setIdCards((prevIdCards) => prevIdCards.slice(0, groupSize));
   }, [groupSize]);
 
+  useEffect(() => {
+    // Get all media input devices (cameras)
+    navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
+      const videoDevices = deviceInfos.filter(
+        (deviceInfo) => deviceInfo.kind === "videoinput"
+      );
+      setDevices(videoDevices);
+      if (videoDevices.length > 0) {
+        setSelectedDeviceId(videoDevices[0].deviceId); // Select the first camera by default
+      }
+    });
+  }, []);
+
   const getVideo = () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (selectedDeviceId) {
       navigator.mediaDevices
         .getUserMedia({
-          video: { width: 1920, height: 1080 },
+          video: {
+            deviceId: selectedDeviceId
+              ? { exact: selectedDeviceId }
+              : undefined,
+          },
         })
         .then((stream) => {
-          let video = videoRef.current;
-          video.srcObject = stream;
-          video.play();
-          streamRef.current = stream; // Store the stream reference
+          videoRef.current.srcObject = stream;
+          streamRef.current = stream; // Store the stream in the ref
         })
         .catch((err) => {
-          console.error("Error accessing webcam: ", err);
+          console.error("Error accessing camera:", err);
         });
-    } else {
-      console.error("getUserMedia is not supported by this browser.");
     }
   };
 
   useEffect(() => {
-    if (isCameraON && videoRef.current) {
+    if (isCameraON && videoRef.current && selectedDeviceId) {
       getVideo();
     }
     return () => {
@@ -358,7 +374,7 @@ function Register_Visitor() {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [isCameraON]);
+  }, [isCameraON, selectedDeviceId]); // Add selectedDeviceId to the dependency array
 
   const onCamera = (event) => {
     event.preventDefault();
@@ -872,30 +888,51 @@ function Register_Visitor() {
                               </Button>
                             )}
                             {isCameraON && (
-                              <Button
-                                variant="contained"
-                                onClick={onCamera}
-                                color="error"
-                                sx={{
-                                  textTransform: "none",
-                                  borderRadius: 2,
-                                }}
-                              >
-                                Turn Camera Off
-                              </Button>
-                            )}
-                            {isCameraON && (
-                              <Button
-                                variant="contained"
-                                onClick={capturePhoto}
-                                sx={{
-                                  textTransform: "none",
-                                  borderRadius: 2,
-                                  backgroundColor: "#239700",
-                                }}
-                              >
-                                Capture Photo
-                              </Button>
+                              <>
+                                <Box sx={{ mt: 2 }}>
+                                  <StyledInputLabel sx={{ fontSize: "12px" }}>
+                                    Select Camera
+                                  </StyledInputLabel>
+                                  <Select
+                                    value={selectedDeviceId}
+                                    onChange={(event) =>
+                                      setSelectedDeviceId(event.target.value)
+                                    }
+                                    sx={{ width: "300px" }}
+                                  >
+                                    {devices.map((device, index) => (
+                                      <MenuItem
+                                        key={device.deviceId}
+                                        value={device.deviceId}
+                                      >
+                                        {device.label || `Camera ${index + 1}`}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </Box>
+                                <Button
+                                  variant="contained"
+                                  onClick={onCamera}
+                                  color="error"
+                                  sx={{
+                                    textTransform: "none",
+                                    borderRadius: 2,
+                                  }}
+                                >
+                                  Turn Camera Off
+                                </Button>
+                                <Button
+                                  variant="contained"
+                                  onClick={capturePhoto}
+                                  sx={{
+                                    textTransform: "none",
+                                    borderRadius: 2,
+                                    backgroundColor: "#239700",
+                                  }}
+                                >
+                                  Capture Photo
+                                </Button>
+                              </>
                             )}
                           </Stack>
                         </Box>
@@ -941,7 +978,6 @@ function Register_Visitor() {
                       </Box>
                     </Box>
                   </form>
-
                   {/* Footer Buttons */}
                   <Box
                     sx={{
