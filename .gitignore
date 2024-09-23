@@ -2,10 +2,10 @@
 # node_modules/
 
 # Ignore environment variable files
-.env
 
 # Ignore log files
 *.log
 
 # Ignore the dist/ directory
 dist/
+node_modules
