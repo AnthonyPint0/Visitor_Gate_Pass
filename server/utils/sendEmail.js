@@ -36,9 +36,9 @@ const sendEmailAndSaveGuest = async (guest, subject, replacements) => {
 
     // Define email options
     const mailOptions = {
-      from: `"Kristu Jayanti College Invitation" <${process.env.SMTP_USER}>`,
+      from: `"Kristu Jayanti College" <${process.env.SMTP_USER}>`,
       to: guest.email,
-      subject,
+      subject: subject,
       html: emailHtml,
     };
 

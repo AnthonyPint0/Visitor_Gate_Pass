@@ -119,10 +119,12 @@ function LoginForm() {
           setTimeout(() => {
             navigate("/pre_approved_guest");
           }, 1000);
+          return;
         } else if (user.role === "security") {
           notifySuccess(`Welcome, ${user.name}!`);
           setTimeout(() => {
             navigate("/dashboard");
+            return;
           }, 1000);
         } else {
           navigate("/unauthorized");

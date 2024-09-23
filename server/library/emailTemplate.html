@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Invitation to {{eventName}}</title>
-    <!-- Fixed here -->
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -56,6 +55,10 @@
         color: #0b3574;
         text-decoration: none;
       }
+      .highlight {
+        color: #e74c3c;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
@@ -65,10 +68,13 @@
       </div>
       <div class="content">
         <p>Dear {{Gname}},</p>
-        <p>We are excited to invite you to our upcoming event:</p>
-        <p><strong>Event Name: </strong>{{eventName}}</p>
-        <p><strong>Date: </strong>{{eventDateTime}}</p>
-        <p><strong>Location: </strong>Kristu Jayanti College</p>
+        <p>We are thrilled to invite you to our upcoming event:</p>
+        <p><strong>Event Name:</strong> {{eventName}}</p>
+        <p><strong>Date:</strong> {{eventDateTime}}</p>
+        <p><strong>Location:</strong> Kristu Jayanti College</p>
+        <p><strong>Gate Number:</strong> {{gateNumber}}</p>
+        <p><strong>Number of People Allowed:</strong> {{numberOfPeople}}</p>
+        <p><strong>Vehicle Parking Info:</strong> {{parkingInfo}}</p>
         <p>Please present this Gate Pass ID at the security gate for entry:</p>
         <div class="gate-pass">Gate Pass ID: <strong>{{passId}}</strong></div>
         <p>We look forward to your presence!</p>

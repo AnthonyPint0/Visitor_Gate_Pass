@@ -3,13 +3,17 @@ import React, { useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../library/helper";
 import Box from "@mui/material/Box";
+import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import SendIcon from "@mui/icons-material/Send";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import dayjs from "dayjs";
 import { ToastContainer, toast, Slide } from "react-toastify";
 
@@ -24,6 +28,10 @@ const Register_Guest = ({ handleClose, userINFO }) => {
     event: "",
     invitedAs: "",
     date: dayjs(),
+    guestCategory: "",
+    groupSize: "",
+    entryGate: "",
+    vehicleParkingInfo: "",
   });
 
   const [errors, setErrors] = useState({
@@ -66,14 +74,15 @@ const Register_Guest = ({ handleClose, userINFO }) => {
     const { id, value } = e.target;
 
     if (id === "mobileNo") {
-      const numericValue = value.replace(/[^0-9]/g, "");
+      const numericValue = value.replace(/[^0-9]/g, "").slice(0, 10);
       setFormData((prevData) => ({
         ...prevData,
         [id]: numericValue,
       }));
       setErrors((prevErrors) => ({
         ...prevErrors,
-        mobileNo: numericValue.length > 0 ? "" : "Mobile number is required",
+        mobileNo:
+          numericValue.length === 10 ? "" : "Mobile number must be 10 digits",
       }));
     } else if (id === "email") {
       setFormData((prevData) => ({
@@ -109,29 +118,42 @@ const Register_Guest = ({ handleClose, userINFO }) => {
       mobile: formData.mobileNo,
       event: formData.event,
       invitedAs: formData.invitedAs,
-      eventDateTime: formData.date.toISOString(), // Ensure the date is in ISO format
+      eventDateTime: formData.date.toISOString(),
+      groupSize: formData.groupSize,
+      guestCategory: formData.guestCategory,
+      entryGate: formData.entryGate,
+      vehicleParkingInfo: formData.vehicleParkingInfo,
     });
 
+    // Validate inputs
     const newErrors = {
+      name: formData.name ? "" : "Name is required",
       email: validateEmail(formData.email) ? "" : "Invalid email format",
       mobileNo: formData.mobileNo.length > 0 ? "" : "Mobile number is required",
+      event: formData.event ? "" : "Event is required",
+      invitedAs: formData.invitedAs ? "" : "Invited As is required",
+      guestCategory: formData.guestCategory ? "" : "Guest Category is required",
+      groupSize: formData.groupSize ? "" : "Group Size is required",
+      entryGate: formData.entryGate ? "" : "Entry Gate is required",
     };
+
     setErrors(newErrors);
 
-    if (newErrors.email || newErrors.mobileNo || !formData.name) {
-      notifyErr("Please enter all the fields with appropriate data.");
+    // Check if any errors exist
+    if (Object.values(newErrors).some((error) => error)) {
+      notifyErr("Please fill in all required fields with appropriate data.");
       return;
     }
 
     try {
-      const token = localStorage.getItem("token"); // Ensure token is handled securely
+      const token = localStorage.getItem("token");
 
       if (!token) {
         alert("No token found.");
         return;
       }
 
-      const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
+      const payload = JSON.parse(atob(token.split(".")[1]));
       const userINFO = {
         name: payload.name,
         email: payload.email,
@@ -147,12 +169,16 @@ const Register_Guest = ({ handleClose, userINFO }) => {
           mobile: formData.mobileNo,
           event: formData.event,
           invitedAs: formData.invitedAs,
-          eventDateTime: formData.date.toISOString(), // Ensure the date is in ISO format
+          eventDateTime: formData.date.toISOString(),
+          groupSize: formData.groupSize,
+          guestCategory: formData.guestCategory,
+          entryGate: formData.entryGate,
+          vehicleParkingInfo: formData.vehicleParkingInfo || null,
           userINFO: userINFO,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Include token in headers
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -167,6 +193,10 @@ const Register_Guest = ({ handleClose, userINFO }) => {
           event: "",
           invitedAs: "",
           date: dayjs(),
+          guestCategory: "",
+          groupSize: "",
+          entryGate: "",
+          vehicleParkingInfo: "",
         });
         setErrors({ email: "", mobileNo: "" });
         setTimeout(() => {
@@ -193,8 +223,28 @@ const Register_Guest = ({ handleClose, userINFO }) => {
       event: "",
       invitedAs: "",
       date: dayjs(),
+      guestCategory: "",
+      groupSize: "",
+      entryGate: "",
+      vehicleParkingInfo: "",
     });
     setErrors({ email: "", mobileNo: "" });
+  };
+
+  const handleGuestCategoryChange = (event) => {
+    const category = event.target.value;
+    setFormData((prevData) => ({
+      ...prevData,
+      guestCategory: event.target.value || category,
+    }));
+  };
+
+  const handleEntryGateChange = (event) => {
+    const gate = event.target.value;
+    setFormData((prevData) => ({
+      ...prevData,
+      entryGate: event.target.value || gate,
+    }));
   };
 
   return (
@@ -256,6 +306,7 @@ const Register_Guest = ({ handleClose, userINFO }) => {
                     required
                     error={!!errors.mobileNo}
                     helperText={errors.mobileNo}
+                    maxRows={10}
                   />
                   <TextField
                     id="event"
@@ -271,9 +322,51 @@ const Register_Guest = ({ handleClose, userINFO }) => {
                     value={formData.invitedAs}
                     onChange={handleInputChange}
                   />
+                  <FormControl fullWidth>
+                    <InputLabel id="guest-category-label">
+                      Guest Category
+                    </InputLabel>
+                    <Select
+                      labelId="guest-category-label"
+                      id="guest-category-select"
+                      value={formData.guestCategory}
+                      label="Guest Category"
+                      onChange={handleGuestCategoryChange}
+                    >
+                      <MenuItem value={"Institutional Guest"}>
+                        Institutional Guest
+                      </MenuItem>
+                      <MenuItem value={"Departmental Guest"}>
+                        Departmental Guest
+                      </MenuItem>
+                      <MenuItem value={"Personal Guest"}>
+                        Personal Guest
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel id="group-size-label">Group Size</InputLabel>
+                    <Select
+                      labelId="group-size-label"
+                      value={formData.groupSize}
+                      onChange={(e) =>
+                        setFormData((prevData) => ({
+                          ...prevData,
+                          groupSize: e.target.value,
+                        }))
+                      }
+                      label="Group Size"
+                    >
+                      {Array.from({ length: 50 }, (_, i) => (
+                        <MenuItem key={i + 1} value={i + 1}>
+                          {i + 1}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Expected Date"
+                    <DateTimePicker
+                      label="Expected Date and Time"
                       value={formData.date}
                       onChange={handleDateChange}
                       slots={{
@@ -281,6 +374,32 @@ const Register_Guest = ({ handleClose, userINFO }) => {
                       }}
                     />
                   </LocalizationProvider>
+                  <FormControl fullWidth>
+                    <InputLabel id="entry-gate-label">Entry Gate</InputLabel>
+                    <Select
+                      labelId="entry-gate-label"
+                      id="entry-gate-select"
+                      value={formData.entryGate}
+                      label="Entry Gate"
+                      onChange={handleEntryGateChange}
+                    >
+                      <MenuItem value={"Gate 1"}>Gate 1</MenuItem>
+                      <MenuItem value={"Gate 2"}>Gate 2</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    id="vehicleParkingInfo"
+                    label="Vehicle Parking Info"
+                    variant="outlined"
+                    value={formData.vehicleParkingInfo}
+                    onChange={(e) =>
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        vehicleParkingInfo: e.target.value,
+                      }))
+                    }
+                    helperText="*Optional"
+                  />
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <Stack
                       direction="row"

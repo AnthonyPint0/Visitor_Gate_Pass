@@ -1,44 +1,59 @@
 import * as React from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { Badge, IconButton, TextField } from "@mui/material";
-import Stack from "@mui/material/Stack";
+import {
+  Badge,
+  IconButton,
+  TextField,
+  Switch,
+  FormControlLabel,
+  Box,
+  Container,
+  Stack,
+} from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
-import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Close";
-import "./custom-toastify.css"; // Your custom CSS file
+import ReplayIcon from "@mui/icons-material/Replay";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import axios from "axios";
 import { useEffect, useState, useCallback } from "react";
 import { API_BASE_URL, formatDateWithPadding } from "../../library/helper";
 import { ToastContainer, toast, Slide } from "react-toastify";
+import dayjs from "dayjs";
 
 const GuestDataGrid = ({ userINFO }) => {
-  const [editMode, setEditMode] = useState({}); // Track which rows are in edit mode
+  const [editMode, setEditMode] = useState(false);
   const [filterDate, setFilterDate] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [rows, setRows] = useState([]);
+  const [originalRows, setOriginalRows] = useState([]);
   const API_URL = API_BASE_URL;
 
   useEffect(() => {
     const fetchGuestHistory = async () => {
       try {
         const token = localStorage.getItem("token");
-        const payload = JSON.parse(atob(token.split(".")[1])); // Decode token payload
-        const userEmail = payload.email;
         if (!token) {
           console.error("No token found");
           return;
         }
 
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const userEmail = payload.email;
+        if (!userEmail) {
+          console.error("User email not found in token payload");
+          return;
+        }
+
         const response = await axios.get(`${API_URL}/guest/guest-history`, {
           params: {
-            HODEmail: userEmail, // Send HODEmail as query param
+            HODEmail: userEmail,
           },
           headers: {
-            Authorization: `Bearer ${token}`, // Ensure Bearer token is correctly formatted
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -46,14 +61,13 @@ const GuestDataGrid = ({ userINFO }) => {
           ? response.data
           : [response.data];
 
-        // Map and format guests data
         const formattedGuests = guests.map((guest) => ({
           id: guest._id,
           passId: guest.passId,
           name: guest.name || "",
           mobileNo: guest.mobile || "",
           date: guest.eventDateTime
-            ? new Date(guest.eventDateTime).toISOString().split("T")[0]
+            ? dayjs(guest.eventDateTime).format("YYYY-MM-DD")
             : "",
           email: guest.email || "",
           event: guest.event || "",
@@ -64,16 +78,17 @@ const GuestDataGrid = ({ userINFO }) => {
         }));
 
         setRows(formattedGuests);
+        setOriginalRows(formattedGuests);
       } catch (error) {
         console.error("Error fetching guest history data:", error);
       }
     };
 
     fetchGuestHistory();
-  }, []);
+  }, [API_URL]);
 
   const notifyErr = (text) =>
-    toast.error(`${text}`, {
+    toast.error(text, {
       position: "top-center",
       autoClose: 2000,
       hideProgressBar: false,
@@ -87,7 +102,7 @@ const GuestDataGrid = ({ userINFO }) => {
     });
 
   const notifySuccess = (text) =>
-    toast.success(`${text}`, {
+    toast.success(text, {
       position: "top-center",
       autoClose: 1500,
       hideProgressBar: false,
@@ -108,83 +123,94 @@ const GuestDataGrid = ({ userINFO }) => {
     setFilterDate(date);
   };
 
-  const toggleEditMode = (id) => {
-    setEditMode((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const handleSaveClick = async (id) => {
-    // Find the row that is being edited
-    const rowToUpdate = rows.find((row) => row.id === id); // Assuming this is the MongoDB _id
-    console.log(rowToUpdate);
-
-    if (!rowToUpdate) {
-      console.error("Row not found for ID:", id);
-      return;
-    }
-
-    if (rowToUpdate.isVisited && rowToUpdate.checkedInTime) {
-      notifyErr(
-        `Guest has already entered the campus on ${formatDateWithPadding(
-          rowToUpdate.checkedInTime
-        )}`
-      );
-      return;
-    }
-
-    // Prompt the user for confirmation
-    const confirmSave = window.confirm(
-      `Are you sure you want to save changes and resend the email for ${rowToUpdate.name}?`
+  const handleDeleteClick = async (id) => {
+    const rowToUpdate = rows.find((row) => row.id === id);
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the Guest with name: ${rowToUpdate?.name}?`
     );
-
-    if (!confirmSave) {
-      return; // Exit if the user cancels
-    }
+    if (!confirmDelete) return;
 
     try {
       const token = localStorage.getItem("token");
-
       if (!token) {
         console.error("No token found");
+        notifyErr("Authentication token missing. Please log in again.");
         return;
       }
 
-      console.log(userINFO);
-
-      // Send the update request to your API using MongoDB _id
-      await axios.put(
-        `${API_URL}/guest/update/${id}`,
-        {
-          rowToUpdate,
-          userInfo: userINFO, // Assuming userINFO is available in your scope
+      await axios.delete(`${API_URL}/guest/delete/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      });
+
+      notifySuccess(`Deleted Guest: ${rowToUpdate?.name}`);
+      setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    } catch (error) {
+      console.error("Error deleting row:", error);
+      notifyErr("Failed to delete row. Please try again later.");
+    }
+  };
+
+  const handleSaveClick = async (id) => {
+    const rowToUpdate = rows.find((row) => row.id === id);
+    if (!rowToUpdate) {
+      console.error("Row not found for ID:", id);
+      notifyErr("Row data not found.");
+      return;
+    }
+
+    // Validate mobile number format
+    const phoneNumberPattern = /^\d{10}$/;
+    if (!phoneNumberPattern.test(rowToUpdate.mobileNo)) {
+      notifyErr("Invalid phone number. Please ensure it is exactly 10 digits.");
+      return;
+    }
+
+    const confirmSave = window.confirm(
+      `Are you sure you want to save changes and resend the email for ${rowToUpdate.name}?`
+    );
+    if (!confirmSave) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        notifyErr("Authentication token missing. Please log in again.");
+        return;
+      }
+
+      const payload = {
+        name: rowToUpdate.name,
+        mobileNo: rowToUpdate.mobileNo,
+        date: rowToUpdate.date,
+        email: rowToUpdate.email,
+        event: rowToUpdate.event,
+        invitedAs: rowToUpdate.invitedAs,
+        isVisited: rowToUpdate.isVisited,
+        checkedInTime: rowToUpdate.checkedInTime,
+      };
+
+      await axios.put(`${API_URL}/guest/update/${id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       notifySuccess("Update complete; email successfully resent!");
     } catch (error) {
       console.error("Error saving row data:", error);
       notifyErr("Failed to save changes. Please try again later.");
     }
-
-    // Exit edit mode
-    toggleEditMode(id);
   };
 
-  const handleCancelClick = (id) => {
-    // Restore row data from backup if implemented
-    toggleEditMode(id);
+  const handleCancelClick = () => {
+    setRows(originalRows);
     window.location.reload();
   };
 
   const handleCellEditCommit = useCallback(
-    (params) => {
+    async (params) => {
       const updatedRows = rows.map((row) => {
         if (row.id === params.id) {
           return { ...row, [params.field]: params.value };
@@ -192,6 +218,27 @@ const GuestDataGrid = ({ userINFO }) => {
         return row;
       });
       setRows(updatedRows);
+
+      // try {
+      //   const token = localStorage.getItem("token");
+      //   if (!token) {
+      //     console.error("No token found");
+      //     return;
+      //   }
+
+      //   await axios.put(
+      //     `${API_URL}/guest/update/${params.id}`,
+      //     { [params.field]: params.value },
+      //     {
+      //       headers: {
+      //         Authorization: `Bearer ${token}`,
+      //       },
+      //     }
+      //   );
+      // } catch (error) {
+      //   console.error("Error saving row data:", error);
+      //   notifyErr("Failed to save changes. Please try again later.");
+      // }
     },
     [rows]
   );
@@ -205,23 +252,20 @@ const GuestDataGrid = ({ userINFO }) => {
       );
       return;
     }
+
     if (
       window.confirm(
         `Are you sure you want to send an invitation to: ${row.email}`
       )
     ) {
       try {
-        const token = localStorage.getItem("token"); // Ensure token is handled securely
-
+        const token = localStorage.getItem("token");
         if (!token) {
           console.error("Couldn't get token!");
           return;
         }
 
-        // Decode token payload
         const payload = JSON.parse(atob(token.split(".")[1]));
-
-        // Set user state
         const user = {
           name: payload.name,
           email: payload.email,
@@ -233,330 +277,158 @@ const GuestDataGrid = ({ userINFO }) => {
           { userInfo: user },
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Include token in headers
+              Authorization: `Bearer ${token}`,
             },
           }
         );
 
-        notifySuccess(response.data.message); // Notify user of success
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+        notifySuccess(response.data.message);
       } catch (error) {
         console.error("Error resending email:", error);
-        notifyErr("Failed to resend email. Please try again later."); // Notify user of failure
+        notifyErr("Failed to resend email. Please try again later.");
       }
     }
   };
 
-  const columns = [
-    {
-      field: "passId",
-      headerName: "Pass Id",
-      width: 100,
-      type: "number",
-      sortable: true,
-      renderCell: (params) => {
-        const formattedValue = params.value
-          ? params.value.toString().padStart(4, "0")
-          : "N/A";
-        return editMode[params.id] ? (
-          <input
-            value={formattedValue}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "passId",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{formattedValue}</div>
-        );
-      },
-    },
-    {
-      field: "name",
-      headerName: "Name",
-      width: 150,
-      sortable: true,
+  const handleDateChange = (params, date) => {
+    handleCellEditCommit({
+      id: params.id,
+      field: "date",
+      value: date ? dayjs(date).format("YYYY-MM-DD") : null,
+    });
+  };
 
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "name",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
-    },
+  const filteredRows = rows.filter(
+    (row) =>
+      (searchTerm === "" ||
+        row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.passId.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (!filterDate || row.date === dayjs(filterDate).format("YYYY-MM-DD"))
+  );
+
+  const columns = [
+    { field: "passId", headerName: "Pass Id", width: 80, editable: editMode },
+    { field: "name", headerName: "Name", width: 150, editable: editMode },
     {
       field: "mobileNo",
       headerName: "Mobile No",
-      width: 100,
-      sortable: false,
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "mobileNo",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
+      width: 130,
+      editable: editMode,
     },
+    { field: "email", headerName: "Email", width: 200, editable: editMode },
     {
       field: "date",
-      headerName: "Date",
-      width: 100,
-      sortable: true,
-
+      headerName: "Event Date",
+      width: 130,
+      editable: false,
       renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            type="date"
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "date",
-                value: e.target.value,
-              });
-            }}
-          />
+        editMode ? (
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DateTimePicker
+              value={params.value ? dayjs(params.value) : null}
+              onChange={(date) => handleDateChange(params, date)}
+              slotProps={{ textField: { variant: "outlined" } }}
+            />
+          </LocalizationProvider>
         ) : (
-          <div>{params.value}</div>
-        ),
-    },
-    {
-      field: "email",
-      headerName: "Email",
-      width: 200,
-      sortable: true,
-
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "email",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
-    },
-    {
-      field: "event",
-      headerName: "Event",
-      width: 150,
-      sortable: true,
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "event",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value}</div>
+          params.value
         ),
     },
     {
       field: "invitedAs",
       headerName: "Invited As",
-      width: 105,
-      sortable: true,
-
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "invitedAs",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value}</div>
-        ),
+      width: 110,
+      editable: editMode,
     },
     {
       field: "isVisited",
-      headerName: "Has Visited?",
-      width: 105,
-      sortable: true,
-
-      renderCell: (params) =>
-        editMode[params.id] ? (
-          <input
-            value={params.value}
-            readOnly
-            onChange={(e) => {
-              e.stopPropagation();
-              handleCellEditCommit({
-                id: params.id,
-                field: "isVisited",
-                value: e.target.value,
-              });
-            }}
-          />
-        ) : (
-          <div>{params.value == false ? "No" : "Yes"}</div>
-        ),
+      headerName: "Visited",
+      width: 100,
+      editable: false,
+      renderCell: (params) => (
+        <Badge
+          badgeContent={params.row.isVisited ? "Visited" : "Not Visited"}
+          color={params.row.isVisited ? "success" : "error"}
+          sx={{ marginLeft: 4 }}
+        />
+      ),
     },
     {
-      field: "Actions",
+      field: "actions",
       headerName: "Actions",
-      width: 150,
-      renderCell: (params) => (
-        <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-          {editMode[params.id] ? (
-            <>
-              <IconButton
-                size="small"
-                onClick={() => handleSaveClick(params.id)}
-              >
-                <SaveIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={() => handleCancelClick(params.id)}
-              >
-                <CancelIcon fontSize="small" />
-              </IconButton>
-            </>
-          ) : (
-            <IconButton size="small" onClick={() => toggleEditMode(params.id)}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-          )}
-          <IconButton
-            size="small"
-            onClick={() => handleResendEmail(params.row)}
-          >
-            <Badge
-              badgeContent={
-                params.row.noOfemailSent ? params.row.noOfemailSent : 0
-              } // Use 0 as a fallback value
-              color="error"
-              sx={{
-                "& .MuiBadge-badge": {
-                  minWidth: "16px",
-                  height: "16px",
-                  fontSize: "10px", // Adjust the font size
-                },
-              }}
+      width: 200,
+      renderCell: (params) => {
+        const { id } = params.row;
+        return (
+          <Stack direction="row" spacing={1} sx={{ paddingTop: "5px" }}>
+            <IconButton
+              onClick={() => handleResendEmail(params.row)}
+              color="primary"
+              disabled={params.row.isVisited}
             >
-              <EmailIcon fontSize="small" />
-            </Badge>
-          </IconButton>
-        </Stack>
-      ),
-      sortable: false,
-      filterable: false,
+              <Badge badgeContent={params.row.noOfemailSent} color="error">
+                <EmailIcon />
+              </Badge>
+            </IconButton>
+            <IconButton onClick={() => handleSaveClick(id)} color="success">
+              <SaveIcon />
+            </IconButton>
+            <IconButton onClick={handleCancelClick} color="error">
+              <ReplayIcon />
+            </IconButton>
+            <IconButton
+              onClick={() => handleDeleteClick(id)}
+              color="error"
+              disabled={params.row.isVisited}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Stack>
+        );
+      },
     },
   ];
 
   return (
-    <div
-      style={{
-        height: "100%",
-        width: "100%",
-        backgroundColor: "#f2f9ff",
-      }}
-    >
-      <div
-        className="search-filter-txt"
-        style={{ display: "flex", justifyContent: "flex-end", padding: "16px" }}
-      >
-        <Stack direction="row" spacing={2}>
-          <TextField
-            sx={{ backgroundColor: "#ffffff" }}
-            id="search-filter"
-            label="Search by name or Pass Id"
-            variant="outlined"
-            value={searchTerm}
-            onChange={handleOnChange}
+    <Container>
+      <Box sx={{ height: "fit-content", width: "100%", paddingBottom: "40px" }}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            label="Filter by Date"
+            value={filterDate}
+            onChange={handleDateFilterChange}
+            slotProps={{ textField: { variant: "outlined" } }}
           />
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              sx={{ backgroundColor: "#ffffff" }}
-              label="Filter by Date"
-              value={filterDate}
-              onChange={handleDateFilterChange}
-              slots={{
-                textField: (params) => <TextField {...params} />,
-              }}
+        </LocalizationProvider>
+        <TextField
+          label="Search"
+          variant="outlined"
+          value={searchTerm}
+          onChange={handleOnChange}
+          fullWidth
+          margin="normal"
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={editMode}
+              onChange={() => setEditMode((prev) => !prev)}
             />
-          </LocalizationProvider>
-        </Stack>
-      </div>
-      <DataGrid
-        sx={{
-          border: "1px solid white",
-          borderRadius: "15px",
-          boxShadow: "2",
-          backgroundColor: "#ffffff",
-        }}
-        rows={rows.filter((row) => {
-          const matchesSearchTerm =
-            row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            row.passId.toString().includes(searchTerm);
-          const matchesDateFilter = filterDate
-            ? new Date(row.date).toDateString() ===
-              new Date(filterDate).toDateString()
-            : true;
-          return matchesSearchTerm && matchesDateFilter;
-        })}
-        columns={columns}
-        initialState={{
-          pagination: { paginationModel: { pageSize: 10 } },
-        }}
-        pageSizeOptions={[10, 20, 50]}
-        components={{
-          Toolbar: GridToolbar,
-        }}
-        disableSelectionOnClick
-        disableColumnMenu
-        onCellEditCommit={handleCellEditCommit} // Handle cell edit commits
-        style={{ height: 650, width: "100%" }}
-      />
-      <ToastContainer />
-    </div>
+          }
+          label="Enable Edit Mode"
+        />
+        <DataGrid
+          rows={filteredRows}
+          columns={columns}
+          pageSize={10}
+          rowsPerPageOptions={[10]}
+          disableSelectionOnClick
+          onCellEditCommit={handleCellEditCommit}
+          components={{ Toolbar: GridToolbar }}
+        />
+        <ToastContainer />
+      </Box>
+    </Container>
   );
 };
 

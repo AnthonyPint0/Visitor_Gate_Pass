@@ -25,7 +25,7 @@ const formatDateWithPadding = (date) => {
   hours = hours ? hours : 12; // Convert '0' to '12'
   hours = padZero(hours);
 
-  return `${day}/${month}/${year}`; //${hours}:${minutes}:${seconds} ${ampm}`;
+  return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
 };
 
 module.exports = formatDateWithPadding;
