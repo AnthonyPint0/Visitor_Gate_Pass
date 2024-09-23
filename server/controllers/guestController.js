@@ -201,10 +201,29 @@ const updateInvitation = async (req, res) => {
   }
 };
 
+const deleteInvitation = async (req, res) => {
+  try {
+    const guestId = req.params.id;
+
+    // Find and delete the guest by ID
+    const result = await GuestModel.findByIdAndDelete(guestId);
+
+    if (!result) {
+      return res.status(404).json({ error: "Guest not found" });
+    }
+
+    res.json({ message: "Guest deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting guest:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   sendInvitation,
   getGuestHistory,
   getUpcomingEvents,
   resendInvitation,
   updateInvitation,
+  deleteInvitation,
 };

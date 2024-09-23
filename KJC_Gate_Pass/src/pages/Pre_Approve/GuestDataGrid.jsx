@@ -12,7 +12,11 @@ import {
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import SaveIcon from "@mui/icons-material/Save";
+<<<<<<< HEAD
 import ReplayIcon from "@mui/icons-material/Replay";
+=======
+import CancelIcon from "@mui/icons-material/Close";
+>>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
 import DeleteIcon from "@mui/icons-material/Delete";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -206,7 +210,10 @@ const GuestDataGrid = ({ userINFO }) => {
 
   const handleCancelClick = () => {
     setRows(originalRows);
+<<<<<<< HEAD
     window.location.reload();
+=======
+>>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
   };
 
   const handleCellEditCommit = useCallback(
@@ -324,7 +331,11 @@ const GuestDataGrid = ({ userINFO }) => {
       renderCell: (params) =>
         editMode ? (
           <LocalizationProvider dateAdapter={AdapterDayjs}>
+<<<<<<< HEAD
             <DateTimePicker
+=======
+            <DatePicker
+>>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
               value={params.value ? dayjs(params.value) : null}
               onChange={(date) => handleDateChange(params, date)}
               slotProps={{ textField: { variant: "outlined" } }}
@@ -360,21 +371,33 @@ const GuestDataGrid = ({ userINFO }) => {
       renderCell: (params) => {
         const { id } = params.row;
         return (
+<<<<<<< HEAD
           <Stack direction="row" spacing={1} sx={{ paddingTop: "5px" }}>
+=======
+          <Stack direction="row" spacing={1}>
+>>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
             <IconButton
               onClick={() => handleResendEmail(params.row)}
               color="primary"
               disabled={params.row.isVisited}
             >
+<<<<<<< HEAD
               <Badge badgeContent={params.row.noOfemailSent} color="error">
                 <EmailIcon />
               </Badge>
+=======
+              <EmailIcon />
+>>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
             </IconButton>
             <IconButton onClick={() => handleSaveClick(id)} color="success">
               <SaveIcon />
             </IconButton>
             <IconButton onClick={handleCancelClick} color="error">
+<<<<<<< HEAD
               <ReplayIcon />
+=======
+              <CancelIcon />
+>>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
             </IconButton>
             <IconButton
               onClick={() => handleDeleteClick(id)}

@@ -4,27 +4,20 @@ require("dotenv").config();
 
 const sendEmailAndSaveGuest = async (guest, subject, replacements) => {
   try {
-    // Retrieve email template
     const template = await getEmailTemplate();
     if (!template || !template.template) {
       throw new Error("Email template not found");
     }
 
-    console.log(replacements);
-    // Replace placeholders in the template
-    let emailHtml = template.template.replace(
-      /{{(.*?)}}/g, // Regex to match {{placeholder}}
-      (match, key) => {
-        const trimmedKey = key.trim();
-        return replacements[trimmedKey] || match; // Replace placeholder with value or leave as-is
-      }
-    );
+    let emailHtml = template.template.replace(/{{(.*?)}}/g, (match, key) => {
+      const trimmedKey = key.trim();
+      return replacements[trimmedKey] || match;
+    });
 
-    // Configure nodemailer
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === "true", // Ensure this is a boolean
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -34,7 +27,15 @@ const sendEmailAndSaveGuest = async (guest, subject, replacements) => {
       },
     });
 
-    // Define email options
+    // Test SMTP Connection
+    transporter.verify((error, success) => {
+      if (error) {
+        console.log("Error connecting to email server:", error);
+      } else {
+        console.log("Server is ready to send emails");
+      }
+    });
+
     const mailOptions = {
       from: `"Kristu Jayanti College" <${process.env.SMTP_USER}>`,
       to: guest.email,
@@ -42,11 +43,9 @@ const sendEmailAndSaveGuest = async (guest, subject, replacements) => {
       html: emailHtml,
     };
 
-    // Send the email
     await transporter.sendMail(mailOptions);
 
     console.log(`Invitation email sent to ${guest.email}`);
-
     return true;
   } catch (error) {
     console.error("Error sending email:", error.message);

@@ -16,10 +16,13 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import dayjs from "dayjs";
 import { ToastContainer, toast, Slide } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = API_BASE_URL;
 
 const Register_Guest = ({ handleClose, userINFO }) => {
+  const navigator = useNavigate();
+  const [shouldReload, setShouldReload] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -74,16 +77,26 @@ const Register_Guest = ({ handleClose, userINFO }) => {
     const { id, value } = e.target;
 
     if (id === "mobileNo") {
+<<<<<<< HEAD
       const numericValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+=======
+      // Remove non-numeric characters
+      const numericValue = value.replace(/[^0-9]/g, "").slice(0, 10); // Limit to 10 digits
+
+      // Update form data
+>>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
       setFormData((prevData) => ({
         ...prevData,
         [id]: numericValue,
       }));
+<<<<<<< HEAD
       setErrors((prevErrors) => ({
         ...prevErrors,
         mobileNo:
           numericValue.length === 10 ? "" : "Mobile number must be 10 digits",
       }));
+=======
+>>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
     } else if (id === "email") {
       setFormData((prevData) => ({
         ...prevData,
@@ -110,6 +123,13 @@ const Register_Guest = ({ handleClose, userINFO }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate mobile number format
+    const phoneNumberPattern = /^\d{10}$/; // Regular expression for exactly 10 digits
+    if (!phoneNumberPattern.test(formData.mobileNo)) {
+      notifyErr("Invalid phone number. Please ensure it is exactly 10 digits.");
+      return;
+    }
 
     console.log("Form Data:", {
       name: formData.name,

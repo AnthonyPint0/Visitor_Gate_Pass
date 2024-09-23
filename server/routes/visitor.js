@@ -191,7 +191,6 @@ router.post(
         EntryGate,
         GroupSize,
         Checkin_time,
-        VehicleNo,
         IdCards,
         Photo,
       } = VisitorSessionInfo;
@@ -292,7 +291,6 @@ router.post(
         purpose_of_visit: PurposeOfVisit,
         entry_gate: EntryGate,
         check_in_time: checkInDate,
-        vehicle_number: VehicleNo || null,
         exit_gate: null,
         check_out_time: null,
         group_size: GroupSize,

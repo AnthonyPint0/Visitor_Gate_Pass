@@ -49,6 +49,7 @@ function Register_Visitor() {
   const [filteredICards, setFilteredICards] = useState([]);
   const streamRef = useRef(null); // Reference to hold the media stream
   const API_URL = API_BASE_URL;
+  const [shouldReload, setShouldReload] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -580,7 +581,7 @@ function Register_Visitor() {
         notifySuccess(response.data.msg);
         handleClear();
         setTimeout(() => {
-          navigate("/dashboard");
+          window.location.reload();
         }, 3000);
       } else {
         notifyErr(response.data.msg);
@@ -787,7 +788,7 @@ function Register_Visitor() {
                           {Array.from({ length: groupSize }, (_, index) => (
                             <Box key={index} sx={{ mb: 2 }}>
                               <CustomDropdown
-                                isTop={true}
+                                // isTop={true}
                                 id={`id${index + 1}`}
                                 name={`id${index + 1}`}
                                 widths={217}

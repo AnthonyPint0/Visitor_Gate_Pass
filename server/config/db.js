@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const mongoURI = "mongodb://127.0.0.1:27017/visitor_management"; // Replace with your MongoDB URI
+const mongoURI = "mongodb+srv://anthony21:anthony21@cluster0.ezgcwet.mongodb.net/visitor_management?retryWrites=true&w=majority&appName=Cluster0"; // Replace with your MongoDB URI
 
 async function connectDB() {
     try {

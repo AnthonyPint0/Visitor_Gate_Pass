@@ -57,15 +57,21 @@ const Pre_Approve = () => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh", // Ensure full height
+      }}
+    >
       <ResponsiveAppBar />
       <Container sx={{ my: 3 }}>
         <Box
           sx={{
             display: "flex",
-            justifyContent: "start",
-            alignItems: "start",
-            marginBottom: "20px",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            mb: 3, // Adjusted for consistent margin
           }}
         >
           <Button
@@ -82,22 +88,25 @@ const Pre_Approve = () => {
           >
             New Guest
           </Button>
-          <Backdrop
-            sx={(theme) => ({
-              color: "#fff",
-              zIndex: theme.zIndex.drawer + 1,
-            })}
-            open={open}
-          >
-            <Register_Guest handleClose={handleClose} userINFO={user} />
-          </Backdrop>
         </Box>
-        <Box sx={{ marginBottom: "20px" }}>
+        <Backdrop
+          sx={(theme) => ({
+            color: "#fff",
+            zIndex: theme.zIndex.drawer + 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          })}
+          open={open}
+        >
+          <Register_Guest handleClose={handleClose} userINFO={user} />
+        </Backdrop>
+        <Box>
           <GuestDataGrid userINFO={user} />
         </Box>
       </Container>
       <Footer />
-    </div>
+    </Box>
   );
 };
 

@@ -33,8 +33,9 @@ function Checkout_Visitor() {
   const [selectedId, setSelectedId] = useState(""); //for selecting an id from dropdown
   const [visitorData, setVisitorData] = useState(null); // State for visitor data
   const [selectedExit, setSelectedExit] = useState("Gate 1"); // Default value for exit gate
+  const [shouldReload, setShouldReload] = useState(false);
   const API_URL = API_BASE_URL;
-  const navigate = useNavigate();
+  const navigator = useNavigate();
 
   useEffect(() => {
     document.title = `Checkout_Visitor: ${width} x ${height}`;
@@ -596,7 +597,7 @@ function Checkout_Visitor() {
                       }}
                       onClick={() => {
                         handleClear();
-                        navigate("/dashboard");
+                        navigator("/dashboard");
                       }}
                     >
                       Cancel

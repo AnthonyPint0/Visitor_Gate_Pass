@@ -16,6 +16,7 @@ import SendIcon from "@mui/icons-material/Send";
 import axios from "axios";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import { API_BASE_URL } from "../../library/helper";
+import { useNavigate } from "react-router-dom";
 
 const SecurityGuestDataGrid = () => {
   const [rows, setRows] = useState([]);
@@ -24,6 +25,8 @@ const SecurityGuestDataGrid = () => {
   const [guestDetails, setGuestDetails] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const API_URL = API_BASE_URL;
+  const [shouldReload, setShouldReload] = useState(false);
+  const navigator = useNavigate();
 
   const handleClose = () => {
     setOpen(false);
