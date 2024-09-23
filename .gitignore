@@ -8,4 +8,10 @@
 
 # Ignore the dist/ directory
 dist/
+
+
+# Ignore node_modules folders in all directories
+**/node_modules/
+
+# Ignore node_modules folders in all directories
 **/node_modules/
