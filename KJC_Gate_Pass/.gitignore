@@ -25,3 +25,5 @@ dist-ssr
 .vercel
 
 node_modules
+# Ignore node_modules folders in all directories
+**/node_modules/
