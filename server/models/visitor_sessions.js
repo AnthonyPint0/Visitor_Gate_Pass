@@ -38,6 +38,10 @@ const VisitorSessionSchema = new Schema({
     type: Number,
     required: true,
   },
+  time_limit: {
+    type: Number,
+    required: true,
+  },
   vehicle_number: {
     type: String,
     required: false,

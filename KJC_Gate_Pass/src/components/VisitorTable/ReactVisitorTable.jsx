@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import StatusBadge from "./StatusBadge.jsx";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import dayjs from "dayjs";
+import durationPlugin from "dayjs/plugin/duration"; // Import the duration plugin
 import {
   TableContainer,
   Paper,
@@ -11,6 +13,10 @@ import {
   styled,
 } from "@mui/material";
 import { formatDateWithPadding } from "../../library/helper.js";
+import "./VisitorTable.css";
+
+// Extend dayjs with the duration plugin
+dayjs.extend(durationPlugin);
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   marginTop: theme.spacing(4),
@@ -45,13 +51,10 @@ const ReactVisitorTable = ({ visitors }) => {
   const [filterText, setFilterText] = useState("");
   const [processedVisitors, setProcessedVisitors] = useState([]);
 
-  // Use effect to process the visitors data
+  // Process visitors data
   useEffect(() => {
     const updatedVisitors = visitors.map((visitor) => ({
       ...visitor,
-      check_in_time: visitor.check_in_time
-        ? formatDateWithPadding(visitor.check_in_time)
-        : "",
       check_out_time: visitor.check_out_time
         ? formatDateWithPadding(visitor.check_out_time)
         : "",
@@ -61,47 +64,66 @@ const ReactVisitorTable = ({ visitors }) => {
 
   const columns = useMemo(
     () => [
-      { field: "name", headerName: "Name", width: 90, sortable: true },
+      { field: "name", headerName: "Name", width: 130, sortable: true },
       {
         field: "phone_number",
         headerName: "Phone Number",
-        width: 110,
+        width: 130,
         sortable: true,
       },
       {
         field: "purpose_of_visit",
         headerName: "Purpose of Visit",
-        width: 130,
+        width: 150,
         sortable: true,
       },
       {
         field: "entry_gate",
         headerName: "Entry Gate",
-        width: 95,
+        width: 120,
         sortable: true,
       },
       {
         field: "check_in_time",
         headerName: "Check-In Time",
-        width: 180,
+        width: 200,
         sortable: true,
+        renderCell: (params) =>
+          params.row.check_in_time
+            ? formatDateWithPadding(params.row.check_in_time)
+            : "",
       },
       {
         field: "exit_gate",
         headerName: "Exit Gate",
-        width: 90,
+        width: 120,
         sortable: true,
       },
       {
         field: "check_out_time",
         headerName: "Check-Out Time",
-        width: 180,
+        width: 200,
         sortable: true,
+      },
+      {
+        field: "time_limit",
+        headerName: "Time Limit",
+        width: 120,
+        sortable: true,
+        renderCell: (params) => (
+          <CountdownTimer
+            checkInTime={params.row.check_in_time}
+            checkOutTime={params.row.check_out_time}
+            timeLimit={params.row.time_limit}
+            rowId={params.row._id} // Pass row id for time-up detection
+            onTimeUp={handleTimeUp} // Pass callback to handle time-up logic
+          />
+        ),
       },
       {
         field: "visitor_cards",
         headerName: "Visitor ID Cards",
-        width: 220,
+        width: 230,
         sortable: false,
         renderCell: (params) => (
           <HorizontalStatusBadgeContainer>
@@ -119,7 +141,11 @@ const ReactVisitorTable = ({ visitors }) => {
         sortable: false,
         renderCell: (params) => (
           <PhotoCell>
-            <img src={params.value} alt="Visitor" width="50" height="60" />
+            <img
+              src={params.value} // base64 image source
+              alt="Visitor"
+              style={{ width: "50px", height: "60px" }}
+            />
           </PhotoCell>
         ),
       },
@@ -135,9 +161,18 @@ const ReactVisitorTable = ({ visitors }) => {
     );
   }, [filterText, processedVisitors]);
 
+  const [timeUpRows, setTimeUpRows] = useState([]);
+
+  // Handle time-up logic and store the row ID for background animation
+  const handleTimeUp = (rowId) => {
+    if (!timeUpRows.includes(rowId)) {
+      setTimeUpRows((prev) => [...prev, rowId]);
+    }
+  };
+
   return (
     <Container
-      maxWidth="lg"
+      maxWidth="xl"
       sx={{
         mt: 3,
         px: {
@@ -197,10 +232,58 @@ const ReactVisitorTable = ({ visitors }) => {
             disableSelectionOnClick
             disableColumnMenu
             style={{ height: 650, width: "100%" }}
+            getRowClassName={(params) =>
+              timeUpRows.includes(params.row._id) ? "time-up-row" : ""
+            } // Conditionally apply class for rows with time-up
           />
         </Box>
       </StyledTableContainer>
     </Container>
+  );
+};
+
+// Countdown Timer component
+const CountdownTimer = ({
+  checkInTime,
+  checkOutTime,
+  timeLimit,
+  rowId,
+  onTimeUp,
+}) => {
+  const [remainingTime, setRemainingTime] = useState("");
+
+  useEffect(() => {
+    const checkInDate = dayjs(checkInTime);
+    const endTime = checkInDate.add(timeLimit, "hour");
+
+    const interval = setInterval(() => {
+      const now = dayjs();
+      const difference = endTime.diff(now);
+
+      if (difference <= 0) {
+        setRemainingTime("Time's up!");
+        if (!checkOutTime) {
+          onTimeUp(rowId); // Notify parent when time's up
+        }
+      } else {
+        const duration = dayjs.duration(difference);
+        const hours = String(duration.hours()).padStart(2, "0");
+        const minutes = String(duration.minutes()).padStart(2, "0");
+        const seconds = String(duration.seconds()).padStart(2, "0");
+        setRemainingTime(`${hours}:${minutes}:${seconds}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [checkInTime, timeLimit, rowId, onTimeUp]);
+
+  const isTimeUp = remainingTime === "Time's up!";
+  const textColor = isTimeUp ? "red" : "green";
+
+  return (
+    <span style={{ color: textColor, fontWeight: "600", fontSize: "16px" }}>
+      {remainingTime}
+    </span>
   );
 };
 

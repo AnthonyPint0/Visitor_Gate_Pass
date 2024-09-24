@@ -4,15 +4,17 @@ import ReactVisitorTable from "../../components/VisitorTable/ReactVisitorTable.j
 import totalVisitorIcons from "../../assets/Icons/TotalVisitoirBlack_Icon.svg";
 import CheckinCountICon from "../../assets/Icons/CheckinCount_Icon.svg";
 import CheckoutCountICon from "../../assets/Icons/CheckoutCount_Icon.svg";
+import ExpiredCountICon from "../../assets/Icons/ExpiredCount_Icon.svg";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner.jsx";
 import { API_BASE_URL } from "../../library/helper.js";
-
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
 import CompleteSidebar from "../../components/SideBarNavi/CompleteSidebar.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
+import { Box } from "@mui/material";
 
 function Dashboard() {
   const { width, height } = useWindowSize();
@@ -40,6 +42,7 @@ function Dashboard() {
           }
         );
         setVisitorData(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching visitor data:", error);
       } finally {
@@ -57,6 +60,7 @@ function Dashboard() {
   let totalVisitors = 0;
   let checkedInVisitors = 0;
   let checkedOutVisitors = 0;
+  let expiredVisitors = 0;
 
   visitorData.forEach((visitor) => {
     visitor.visitor_cards.forEach((card) => {
@@ -64,6 +68,17 @@ function Dashboard() {
         checkedInVisitors++;
       } else if (card.status === "checked_out") {
         checkedOutVisitors++;
+      }
+
+      // Calculate expiration for visitors still checked in
+      if (card.check_out_time === null) {
+        const checkInTime = dayjs(card.check_in_time); // Parse check_in_time
+        const expirationTime = checkInTime.add(visitor.time_limit, "hour"); // Add the time limit to check_in_time
+        const currentTime = dayjs(); // Get the current time
+
+        if (currentTime.isAfter(expirationTime)) {
+          expiredVisitors++; // Visitor has expired
+        }
       }
     });
   });
@@ -96,6 +111,14 @@ function Dashboard() {
               widgets="checkoutVisitorCount"
               title="Check-out Visitor"
               count={checkedOutVisitors}
+            />
+            <DashboardWidget
+              isCountWidget={true}
+              icon={ExpiredCountICon}
+              widgets="expiredVisitorCount"
+              title="Expired Visitor"
+              count={expiredVisitors}
+              isAnimate={true}
             />
           </div>
           <div className="data-grid">

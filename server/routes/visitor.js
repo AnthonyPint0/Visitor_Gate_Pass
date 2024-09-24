@@ -124,6 +124,7 @@ router.get(
           exit_gate: session.exit_gate,
           check_out_time: latestCheckOutTime,
           group_size: session.group_size,
+          time_limit: session.time_limit,
           photos: session.photos || [], // Ensure photos is an array
           visitor_cards:
             groupMembers.length > 0
@@ -190,6 +191,7 @@ router.post(
         PurposeOfVisit,
         EntryGate,
         GroupSize,
+        TimeLimit,
         Checkin_time,
         IdCards,
         Photo,
@@ -201,6 +203,7 @@ router.post(
         !PurposeOfVisit ||
         !EntryGate ||
         !GroupSize ||
+        !TimeLimit ||
         !Checkin_time ||
         !IdCards
       ) {
@@ -294,6 +297,7 @@ router.post(
         exit_gate: null,
         check_out_time: null,
         group_size: GroupSize,
+        time_limit: TimeLimit,
         group_id: new mongoose.Types.ObjectId(), // Placeholder for group_id
         photos: Photo,
       });

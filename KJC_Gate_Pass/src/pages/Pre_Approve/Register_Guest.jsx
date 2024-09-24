@@ -77,26 +77,16 @@ const Register_Guest = ({ handleClose, userINFO }) => {
     const { id, value } = e.target;
 
     if (id === "mobileNo") {
-<<<<<<< HEAD
       const numericValue = value.replace(/[^0-9]/g, "").slice(0, 10);
-=======
-      // Remove non-numeric characters
-      const numericValue = value.replace(/[^0-9]/g, "").slice(0, 10); // Limit to 10 digits
-
-      // Update form data
->>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
       setFormData((prevData) => ({
         ...prevData,
         [id]: numericValue,
       }));
-<<<<<<< HEAD
       setErrors((prevErrors) => ({
         ...prevErrors,
         mobileNo:
           numericValue.length === 10 ? "" : "Mobile number must be 10 digits",
       }));
-=======
->>>>>>> e2c3c4ab6b24828740f4471c1795d0ff91a2735d
     } else if (id === "email") {
       setFormData((prevData) => ({
         ...prevData,

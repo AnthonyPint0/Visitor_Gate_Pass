@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../library/helper.js";
 import CompleteSidebar from "../../components/SideBarNavi/CompleteSidebar.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 function Register_Visitor() {
   const { width, height } = useWindowSize();
@@ -32,6 +33,7 @@ function Register_Visitor() {
   const [entryGate, setEntryGate] = useState("Gate 1"); // Default entry gate
   const [vehicleNo, setVehicleNo] = useState("");
   const [groupSize, setGroupSize] = useState(1);
+  const [timeLimit, setTimeLimit] = useState(1);
   const [currentDateTime, setCurrentDateTime] = useState("");
   const [hasPhoto, setHasPhoto] = useState(false);
   const [isCameraON, setIsCameraON] = useState(false);
@@ -360,6 +362,10 @@ function Register_Visitor() {
     };
   }, [isCameraON]);
 
+  const handleTimeLimitChange = (event) => {
+    setTimeLimit(event.target.value);
+  };
+
   const onCamera = (event) => {
     event.preventDefault();
     if (isCameraON && streamRef.current) {
@@ -533,6 +539,11 @@ function Register_Visitor() {
       return;
     }
 
+    if (!timeLimit) {
+      notifyErr("Please provide the time limit");
+      return;
+    }
+
     const idArrayFilled = await checkArrayFilled();
     const accessibleVisitor = await checkVisitorAccessibility();
 
@@ -551,6 +562,7 @@ function Register_Visitor() {
       EntryGate: entryGate,
       VehicleNo: vehicleNo || null,
       GroupSize: groupSize,
+      TimeLimit: timeLimit,
       Checkin_time: new Date(),
       IdCards: idCards,
       Photo: photoDataUrl,
@@ -601,6 +613,7 @@ function Register_Visitor() {
     setEntryGate("Gate 1"); // Default entry gate
     setVehicleNo(""); // New state variable to hold the vehicle number
     setGroupSize(1);
+    setTimeLimit(1);
     // const [currentDateTime, setCurrentDateTime] = useState('');
     setHasPhoto(false);
     setIsCameraON(false);
@@ -714,6 +727,23 @@ function Register_Visitor() {
                           />
                         </StyledFormControl>
 
+                        <StyledFormControl>
+                          <StyledInputLabel id="time-limit-label">
+                            Time Limit
+                          </StyledInputLabel>
+                          <StyledSelect
+                            name="timeLimit"
+                            id="timeLimit"
+                            value={timeLimit}
+                            onChange={handleTimeLimitChange}
+                          >
+                            {Array.from({ length: 6 }, (_, i) => (
+                              <StyledMenuItem key={i + 1} value={i + 1}>
+                                {i + 1}
+                              </StyledMenuItem>
+                            ))}
+                          </StyledSelect>
+                        </StyledFormControl>
                         <StyledFormControl>
                           <StyledInputLabel id="entry">
                             Entry Gate
