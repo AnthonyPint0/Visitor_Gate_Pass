@@ -18,13 +18,16 @@ const getGuestDetailsToday = async (req, res) => {
         $lt: tomorrow.toISOString(),
       },
       checkedInTime: null, // Only fetch guests who haven't checked in yet
-    }).select("name passId email mobile event invitedAs eventDateTime");
+    }).select(
+      "name passId email mobile event invitedAs eventDateTime entryGate guestCategory vehicleParkingInfo groupSize"
+    );
 
     if (guests.length === 0) {
       return res.status(200).json([]);
     }
 
     res.status(200).json(guests);
+    console.log(guests);
   } catch (error) {
     console.error("Error in getGuestDetailsToday:", error);
     res

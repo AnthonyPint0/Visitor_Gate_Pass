@@ -82,10 +82,21 @@ const SecurityGuestDataGrid = () => {
           email: guest.email || "",
           mobileNo: guest.mobile || "",
           date: guest.eventDateTime
-            ? new Date(guest.eventDateTime).toISOString().split("T")[0]
+            ? new Date(guest.eventDateTime).toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              })
             : "",
           event: guest.event || "",
           invitedAs: guest.invitedAs || "",
+          entryGate: guest.entryGate || "",
+          guestCategory: guest.guestCategory || "",
+          groupSize: guest.groupSize || "",
+          vehicleParkingInfo: guest.vehicleParkingInfo || "",
         }));
         setRows(formattedGuests);
       } catch (error) {
@@ -339,6 +350,19 @@ const SecurityGuestDataGrid = () => {
               </Typography>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: "500" }}>
                 <strong>Invited As:</strong> {selectedGuest.invitedAs}
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: "500" }}>
+                <strong>Guest Category:</strong> {selectedGuest.guestCategory}
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: "500" }}>
+                <strong>Entry Gate:</strong> {selectedGuest.entryGate}
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: "500" }}>
+                <strong>Group Size:</strong> {selectedGuest.groupSize}
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: "500" }}>
+                <strong>Vehicle Parking:</strong>{" "}
+                {selectedGuest.vehicleParkingInfo}
               </Typography>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: "500" }}>
                 <strong>Date:</strong> {selectedGuest.date}
