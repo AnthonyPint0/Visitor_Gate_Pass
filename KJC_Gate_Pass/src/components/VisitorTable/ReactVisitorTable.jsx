@@ -157,6 +157,22 @@ const ReactVisitorTable = ({ visitors }) => {
           </PhotoCell>
         ),
       },
+      {
+        field: "actions",
+        headerName: "Actions",
+        width: 70,
+        sortable: false,
+        renderCell: (params) => (
+          <IconButton
+            onClick={() => {
+              window.location.href = `tel:${params.row.phone_number}`;
+            }}
+            aria-label="call"
+          >
+            <PhoneIcon color="primary" />
+          </IconButton>
+        ),
+      },
     ],
     []
   );
