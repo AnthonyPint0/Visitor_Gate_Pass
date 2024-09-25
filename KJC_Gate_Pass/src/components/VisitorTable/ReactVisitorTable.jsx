@@ -251,37 +251,55 @@ const CountdownTimer = ({
   onTimeUp,
 }) => {
   const [remainingTime, setRemainingTime] = useState("");
+  const [weight, setWeight] = useState("600");
 
   useEffect(() => {
-    const checkInDate = dayjs(checkInTime);
-    const endTime = checkInDate.add(timeLimit, "hour");
+    let interval; // Declare interval outside to clear it later
 
-    const interval = setInterval(() => {
-      const now = dayjs();
-      const difference = endTime.diff(now);
+    if (checkOutTime) {
+      setRemainingTime(timeLimit.toString()); // Set remaining time if there's a checkout time
+      setWeight("500");
+    } else {
+      const checkInDate = dayjs(checkInTime); // Convert checkInTime to dayjs object
+      const endTime = checkInDate.add(timeLimit, "hour"); // Add time limit to the check-in time to get the end time
 
-      if (difference <= 0) {
-        setRemainingTime("Time's up!");
-        if (!checkOutTime) {
-          onTimeUp(rowId); // Notify parent when time's up
+      interval = setInterval(() => {
+        const now = dayjs(); // Current time
+        const difference = endTime.diff(now); // Time difference between now and the end time
+
+        if (difference <= 0) {
+          setRemainingTime("Time's up!"); // Set to "Time's up!" when time is finished
+          clearInterval(interval); // Clear the interval when time is up
+          if (!checkOutTime) {
+            onTimeUp(rowId); // Notify the parent when time is up if no checkout time
+          }
+        } else {
+          // Calculate remaining time
+          const duration = dayjs.duration(difference);
+          const hours = String(duration.hours()).padStart(2, "0");
+          const minutes = String(duration.minutes()).padStart(2, "0");
+          const seconds = String(duration.seconds()).padStart(2, "0");
+          setRemainingTime(`${hours}:${minutes}:${seconds}`); // Update the remaining time
         }
-      } else {
-        const duration = dayjs.duration(difference);
-        const hours = String(duration.hours()).padStart(2, "0");
-        const minutes = String(duration.minutes()).padStart(2, "0");
-        const seconds = String(duration.seconds()).padStart(2, "0");
-        setRemainingTime(`${hours}:${minutes}:${seconds}`);
-      }
-    }, 1000);
+      }, 1000);
+    }
 
-    return () => clearInterval(interval);
-  }, [checkInTime, timeLimit, rowId, onTimeUp]);
+    // Cleanup function to clear the interval when the component unmounts
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [checkInTime, checkOutTime, timeLimit, rowId, onTimeUp]);
 
-  const isTimeUp = remainingTime === "Time's up!";
-  const textColor = isTimeUp ? "red" : "green";
+  const isTimeUp = remainingTime === "Time's up!"; // Check if time is up
+  let textColor = isTimeUp ? "red" : "green"; // Change text color based on time status
+
+  // Handle case where remainingTime might be too short (or invalid)
+  if (remainingTime.length === 1) {
+    textColor = "black"; // Set text color to black for 1-character cases
+  }
 
   return (
-    <span style={{ color: textColor, fontWeight: "600", fontSize: "16px" }}>
+    <span style={{ color: textColor, fontWeight: weight, fontSize: "16px" }}>
       {remainingTime}
     </span>
   );

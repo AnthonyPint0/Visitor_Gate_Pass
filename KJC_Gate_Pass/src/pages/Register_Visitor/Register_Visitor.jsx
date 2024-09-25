@@ -12,7 +12,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import SendIcon from "@mui/icons-material/Send";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useWindowSize from "../../hooks/useWindowSize.jsx";
@@ -35,12 +35,17 @@ function Register_Visitor() {
   const [groupSize, setGroupSize] = useState(1);
   const [timeLimit, setTimeLimit] = useState(1);
   const [currentDateTime, setCurrentDateTime] = useState("");
-  const [hasPhoto, setHasPhoto] = useState(false);
+
+  const [selectedCamera, setSelectedCamera] = useState("");
+  const [availableCameras, setAvailableCameras] = useState([]);
   const [isCameraON, setIsCameraON] = useState(false);
-  const [photoDataUrl, setPhotoDataUrl] = useState(""); // New state variable to hold the photo data URL
-  const NameInputRef = useRef(null);
+  const [photoDataUrl, setPhotoDataUrl] = useState(null);
+  const [hasPhoto, setHasPhoto] = useState(false);
+
   const videoRef = useRef(null);
   const photoRef = useRef(null);
+  const streamRef = useRef(null); // Reference to hold the media stream
+  const NameInputRef = useRef(null);
   const [options, setOptions] = useState([
     { value: "Campus Tour", label: "Campus Tour" },
     { value: "Meeting", label: "Meeting" },
@@ -49,7 +54,6 @@ function Register_Visitor() {
   const [filteredOptions, setFilteredOptions] = useState(options); // Define filteredOptions state
   const [idCards, setIdCards] = useState(["", "", "", "", ""]);
   const [filteredICards, setFilteredICards] = useState([]);
-  const streamRef = useRef(null); // Reference to hold the media stream
   const API_URL = API_BASE_URL;
   const [shouldReload, setShouldReload] = useState(false);
   const navigate = useNavigate();
@@ -182,7 +186,7 @@ function Register_Visitor() {
         }
       );
 
-      console.log(response.data);
+      // console.log(response.data);
       return response.data.map((item) => String(item));
     } catch (error) {
       console.error("Error fetching options:", error);
@@ -326,16 +330,45 @@ function Register_Visitor() {
     setName(event.target.value);
   };
 
+  const handleTimeLimitChange = (event) => {
+    setTimeLimit(event.target.value);
+  };
+
   // Reset idCards when groupSize decreases
   useEffect(() => {
     setIdCards((prevIdCards) => prevIdCards.slice(0, groupSize));
   }, [groupSize]);
 
-  const getVideo = () => {
+  // Function to get available cameras
+  useEffect(() => {
+    const getAvailableCameras = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(
+          (device) => device.kind === "videoinput"
+        );
+        setAvailableCameras(videoDevices);
+        if (videoDevices.length > 0) {
+          setSelectedCamera(videoDevices[0].deviceId); // Set first camera as default
+        }
+      } catch (error) {
+        console.error("Error accessing cameras", error);
+      }
+    };
+
+    getAvailableCameras();
+  }, []);
+
+  // Get the video stream from the selected camera
+  const getVideo = (cameraId) => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
         .getUserMedia({
-          video: { width: 1920, height: 1080 },
+          video: {
+            deviceId: cameraId ? { exact: cameraId } : undefined,
+            width: 1920,
+            height: 1080,
+          },
         })
         .then((stream) => {
           let video = videoRef.current;
@@ -352,32 +385,45 @@ function Register_Visitor() {
   };
 
   useEffect(() => {
-    if (isCameraON && videoRef.current) {
-      getVideo();
+    if (isCameraON && videoRef.current && selectedCamera) {
+      getVideo(selectedCamera);
     }
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [isCameraON]);
+  }, [isCameraON, selectedCamera]);
 
-  const handleTimeLimitChange = (event) => {
-    setTimeLimit(event.target.value);
+  // Function to turn camera on
+  const onCamera = async () => {
+    if (!isCameraON) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            deviceId: selectedCamera ? { exact: selectedCamera } : undefined,
+          },
+        });
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        setIsCameraON(true);
+      } catch (err) {
+        console.error("Error accessing camera: ", err);
+      }
+    } else {
+      stopCamera();
+    }
   };
 
-  const onCamera = (event) => {
-    event.preventDefault();
-    if (isCameraON && streamRef.current) {
-      // Stop all tracks of the current stream if the camera is being turned off
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null; // Clear the stream reference
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
     }
-    setIsCameraON(!isCameraON); // Toggle camera state
+    setIsCameraON(false);
   };
 
   const capturePhoto = (event) => {
-    event.preventDefault();
     const width = 290;
     const height = width / (16 / 9);
     let video = videoRef.current;
@@ -386,21 +432,22 @@ function Register_Visitor() {
     photo.height = height;
     const context = photo.getContext("2d");
     context.drawImage(video, 0, 0, width, height);
-    setHasPhoto(true); // Set the photo state to true once a photo is captured
 
     // Save the captured image as a data URL
     const dataUrl = photo.toDataURL("image/png");
     setPhotoDataUrl(dataUrl);
+    setHasPhoto(true); // Set the photo state to true once a photo is captured
   };
 
   const clearPhoto = (event) => {
-    event.preventDefault();
+    const context = photoRef.current.getContext("2d");
+    context.clearRect(0, 0, photoRef.current.width, photoRef.current.height);
     setHasPhoto(false);
     setPhotoDataUrl("");
-    if (photoRef.current) {
-      const context = photoRef.current.getContext("2d");
-      context.clearRect(0, 0, photoRef.current.width, photoRef.current.height);
-    }
+  };
+
+  const handleCameraChange = (event) => {
+    setSelectedCamera(event.target.value);
   };
 
   const checkArrayFilled = async () => {
@@ -496,7 +543,6 @@ function Register_Visitor() {
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
     // console.log(visitorExists);
 
     if (phoneNumber.length !== 10) {
@@ -605,7 +651,7 @@ function Register_Visitor() {
     }
   };
 
-  const handleClear = () => {
+  const handleClear = (event) => {
     setVisitorExists(false);
     setPhoneNumber("");
     setName("");
@@ -626,6 +672,9 @@ function Register_Visitor() {
     setFilteredOptions(options); // Define filteredOptions state
     setIdCards(["", "", "", "", ""]);
     setFilteredICards([]);
+    clearPhoto();
+    stopCamera();
+    setSelectedCamera(availableCameras[0]?.deviceId || "");
   };
 
   // Import other necessary components and hooks
@@ -839,7 +888,6 @@ function Register_Visitor() {
                           ))}
                         </StyledFormControl>
                       </Box>
-
                       {/* Right Section */}
                       <Box
                         sx={{
@@ -852,6 +900,31 @@ function Register_Visitor() {
                           flex: 1,
                         }}
                       >
+                        {/* Camera Selection Dropdown */}
+                        <FormControl
+                          sx={{ minWidth: 120, marginBottom: 2, mt: 2 }}
+                        >
+                          <InputLabel id="camera-select-label">
+                            Select Camera
+                          </InputLabel>
+                          <Select
+                            labelId="camera-select-label"
+                            id="camera-select"
+                            value={selectedCamera}
+                            label="Select Camera"
+                            onChange={handleCameraChange}
+                          >
+                            {availableCameras.map((camera) => (
+                              <MenuItem
+                                key={camera.deviceId}
+                                value={camera.deviceId}
+                              >
+                                {camera.label || `Camera ${camera.deviceId}`}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+
                         <Box
                           className="photo-frame"
                           sx={{
@@ -863,9 +936,6 @@ function Register_Visitor() {
                             height: "fit-content",
                           }}
                         >
-                          <StyledInputLabel sx={{ fontSize: "12px" }}>
-                            Photo
-                          </StyledInputLabel>
                           <Box
                             className="live-videos"
                             sx={{
@@ -888,6 +958,7 @@ function Register_Visitor() {
                               }}
                             />
                           </Box>
+
                           <Stack spacing={2} direction="column" sx={{ mt: 2 }}>
                             {!isCameraON && (
                               <Button
@@ -917,7 +988,7 @@ function Register_Visitor() {
                             {isCameraON && (
                               <Button
                                 variant="contained"
-                                onClick={capturePhoto}
+                                onClick={() => capturePhoto()}
                                 sx={{
                                   textTransform: "none",
                                   borderRadius: 2,
@@ -929,6 +1000,7 @@ function Register_Visitor() {
                             )}
                           </Stack>
                         </Box>
+
                         <Box
                           className="resulter"
                           sx={{
@@ -1007,7 +1079,7 @@ function Register_Visitor() {
                           textTransform: "none",
                           borderRadius: 1,
                         }}
-                        onClick={handleClear}
+                        onClick={() => handleClear()}
                       >
                         Clear
                       </Button>
@@ -1021,7 +1093,7 @@ function Register_Visitor() {
                           textTransform: "none",
                           borderRadius: 1,
                         }}
-                        onClick={handleSubmit}
+                        onClick={() => handleSubmit()}
                       >
                         Submit
                       </Button>
