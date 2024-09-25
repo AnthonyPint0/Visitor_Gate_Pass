@@ -74,19 +74,19 @@ const ReactVisitorTable = ({ visitors }) => {
       {
         field: "purpose_of_visit",
         headerName: "Purpose of Visit",
-        width: 150,
+        width: 130,
         sortable: true,
       },
       {
         field: "entry_gate",
         headerName: "Entry Gate",
-        width: 120,
+        width: 100,
         sortable: true,
       },
       {
         field: "check_in_time",
         headerName: "Check-In Time",
-        width: 200,
+        width: 180,
         sortable: true,
         renderCell: (params) =>
           params.row.check_in_time
@@ -94,21 +94,27 @@ const ReactVisitorTable = ({ visitors }) => {
             : "",
       },
       {
+        field: "vehicle_number",
+        headerName: "Vehicle No",
+        width: 130,
+        sortable: true,
+      },
+      {
         field: "exit_gate",
         headerName: "Exit Gate",
-        width: 120,
+        width: 100,
         sortable: true,
       },
       {
         field: "check_out_time",
         headerName: "Check-Out Time",
-        width: 200,
+        width: 180,
         sortable: true,
       },
       {
         field: "time_limit",
         headerName: "Time Limit",
-        width: 120,
+        width: 110,
         sortable: true,
         renderCell: (params) => (
           <CountdownTimer

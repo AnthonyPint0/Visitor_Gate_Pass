@@ -61,16 +61,13 @@ const Pre_Approve = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        minHeight: "100vh", // Ensure full height
+        minHeight: "100vh",
       }}
     >
       <ResponsiveAppBar />
-      <Container sx={{ my: 3 }}>
+      <Container sx={{ m: 3 }} maxWidth={false} disableGutters>
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "flex-start",
-            alignItems: "center",
             mb: 3, // Adjusted for consistent margin
           }}
         >

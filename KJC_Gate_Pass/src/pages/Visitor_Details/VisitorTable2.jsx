@@ -249,6 +249,15 @@ const VisitorTable2 = ({ visitors }) => {
                                   <Typography variant="subtitle1" gutterBottom>
                                     <b>Entry Gate:</b> {row.entry_gate}
                                   </Typography>
+                                  {row.vehicle_number && (
+                                    <Typography
+                                      variant="subtitle1"
+                                      gutterBottom
+                                    >
+                                      <b>Vehicle Number:</b>{" "}
+                                      {row.vehicle_number}
+                                    </Typography>
+                                  )}
                                   <Typography variant="subtitle1" gutterBottom>
                                     <b>Check-In Time:</b>{" "}
                                     {formatDateWithPadding(row.check_in_time)}

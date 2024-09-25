@@ -55,6 +55,7 @@ router.get(
           check_in_time: session.check_in_time,
           exit_gate: session.exit_gate,
           check_out_time: latestCheckOutTime,
+          vehicle_number: session.vehicle_number,
           group_size: session.group_size,
           photos: session.photos, // session.photos,
           visitor_cards: groupMembers
@@ -122,9 +123,11 @@ router.get(
           entry_gate: session.entry_gate,
           check_in_time: session.check_in_time,
           exit_gate: session.exit_gate,
+
           check_out_time: latestCheckOutTime,
           group_size: session.group_size,
           time_limit: session.time_limit,
+          vehicle_number: session.vehicle_number,
           photos: session.photos || [], // Ensure photos is an array
           visitor_cards:
             groupMembers.length > 0
@@ -190,6 +193,7 @@ router.post(
         Name,
         PurposeOfVisit,
         EntryGate,
+        VehicleNo,
         GroupSize,
         TimeLimit,
         Checkin_time,
@@ -293,6 +297,7 @@ router.post(
         visitor_id: visitorId,
         purpose_of_visit: PurposeOfVisit,
         entry_gate: EntryGate,
+        vehicle_number: VehicleNo,
         check_in_time: checkInDate,
         exit_gate: null,
         check_out_time: null,

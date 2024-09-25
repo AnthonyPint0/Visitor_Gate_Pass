@@ -19,9 +19,11 @@ const generateExcel = (result) => {
         "Phone Number",
         "Purpose of Visit",
         "Entry Gate",
+        "Vehicle Number",
         "Check-in",
         "Exit Gate",
         "Check-out",
+        "Time Limit",
         "Group Size",
         "Card IDs",
       ];
@@ -36,11 +38,13 @@ const generateExcel = (result) => {
           session.phone_number,
           session.purpose_of_visit,
           session.entry_gate,
+          session.vehicle_number,
           new Date(session.check_in_time).toLocaleString(),
           session.exit_gate || "N/A",
           session.check_out_time
             ? new Date(session.check_out_time).toLocaleString()
             : "N/A",
+          session.time_limit,
           session.group_size,
           session.group_info.group_members
             .map((member) => member.card_id)
