@@ -19,6 +19,7 @@ const generateExcel = (result) => {
         "Phone Number",
         "Purpose of Visit",
         "Entry Gate",
+        "Vehicle Number",
         "Check-in",
         "Exit Gate",
         "Check-out",
@@ -36,6 +37,7 @@ const generateExcel = (result) => {
           session.phone_number,
           session.purpose_of_visit,
           session.entry_gate,
+          session.vehicle_number,
           new Date(session.check_in_time).toLocaleString(),
           session.exit_gate || "N/A",
           session.check_out_time

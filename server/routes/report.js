@@ -53,6 +53,7 @@ router.get(
             phone_number: "$visitor_info.phone_number",
             purpose_of_visit: 1,
             entry_gate: 1,
+            vehicle_number: 1,
             check_in_time: 1,
             exit_gate: 1,
             check_out_time: 1,

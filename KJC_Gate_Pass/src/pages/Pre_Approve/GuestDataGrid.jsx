@@ -67,11 +67,15 @@ const GuestDataGrid = ({ userINFO }) => {
           name: guest.name || "",
           mobileNo: guest.mobile || "",
           date: guest.eventDateTime
-            ? dayjs(guest.eventDateTime).format("YYYY-MM-DD")
+            ? dayjs(guest.eventDateTime).format("YYYY-MM-DD, hh:mm A")
             : "",
           email: guest.email || "",
           event: guest.event || "",
           invitedAs: guest.invitedAs || "",
+          guestCategory: guest.guestCategory || "",
+          groupSize: guest.groupSize || "",
+          entryGate: guest.entryGate || "",
+          vehicleParkingInfo: guest.vehicleParkingInfo || "",
           noOfemailSent: guest.noOfemailSent || 0,
           isVisited: guest.isVisited || false,
           checkedInTime: guest.checkedInTime || null,
@@ -341,6 +345,31 @@ const GuestDataGrid = ({ userINFO }) => {
       editable: editMode,
     },
     {
+      field: "guestCategory",
+      headerName: "Guest Category",
+      width: 110,
+      editable: editMode,
+    },
+    {
+      field: "groupSize",
+      headerName: "Group Size",
+      width: 110,
+      editable: editMode,
+    },
+    {
+      field: "entryGate",
+      headerName: "Entry Gate",
+      width: 110,
+      editable: editMode,
+    },
+    {
+      field: "vehicleParkingInfo",
+      headerName: "Parking Info",
+      width: 110,
+      editable: editMode,
+    },
+
+    {
       field: "isVisited",
       headerName: "Visited",
       width: 100,
@@ -390,8 +419,8 @@ const GuestDataGrid = ({ userINFO }) => {
   ];
 
   return (
-    <Container>
-      <Box sx={{ height: "fit-content", width: "100%", paddingBottom: "40px" }}>
+    <Container maxWidth={false} disableGutters>
+      <Box sx={{ width: "97vw", paddingBottom: "40px" }}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Filter by Date"
