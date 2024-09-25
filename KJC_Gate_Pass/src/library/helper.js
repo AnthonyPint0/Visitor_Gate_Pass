@@ -1,5 +1,5 @@
 // Constant for the API base URL
-export const API_BASE_URL = "http://localhost:3002";
+export const API_BASE_URL = "http://172.18.4.97:3002";
 // import.meta.env.VITE_BACKEND_URL || "http://172.18.4.46:3002"; // Fallback to localhost if not defined
 // replace <localhost> with this device's IP address to access the website in your network
 

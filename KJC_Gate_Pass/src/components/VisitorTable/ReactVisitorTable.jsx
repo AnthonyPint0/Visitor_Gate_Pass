@@ -11,7 +11,9 @@ import {
   Typography,
   Box,
   styled,
+  IconButton,
 } from "@mui/material";
+import PhoneIcon from "@mui/icons-material/Phone";
 import { formatDateWithPadding } from "../../library/helper.js";
 import "./VisitorTable.css";
 

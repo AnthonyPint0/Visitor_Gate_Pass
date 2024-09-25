@@ -14,7 +14,7 @@ import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
 import CompleteSidebar from "../../components/SideBarNavi/CompleteSidebar.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 
 function Dashboard() {
   const { width, height } = useWindowSize();
