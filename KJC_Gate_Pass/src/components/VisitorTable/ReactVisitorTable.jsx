@@ -11,7 +11,9 @@ import {
   Typography,
   Box,
   styled,
+  IconButton,
 } from "@mui/material";
+import PhoneIcon from "@mui/icons-material/Phone";
 import { formatDateWithPadding } from "../../library/helper.js";
 import "./VisitorTable.css";
 
@@ -153,6 +155,22 @@ const ReactVisitorTable = ({ visitors }) => {
               style={{ width: "50px", height: "60px" }}
             />
           </PhotoCell>
+        ),
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        width: 70,
+        sortable: false,
+        renderCell: (params) => (
+          <IconButton
+            onClick={() => {
+              window.location.href = `tel:${params.row.phone_number}`;
+            }}
+            aria-label="call"
+          >
+            <PhoneIcon color="primary" />
+          </IconButton>
         ),
       },
     ],
